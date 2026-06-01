@@ -1,0 +1,369 @@
+### MindCare API - Testes com REST Client
+### Use com VS Code Extension: REST Client
+### Pressione Ctrl+Alt+R para executar a requisição
+
+@baseUrl = http://localhost:4000
+@contentType = application/json
+
+### ============================================================================
+### 1. HEALTH CHECK
+### ============================================================================
+
+### Health
+GET {{baseUrl}}/health
+
+### ============================================================================
+### 2. AUTHENTICATION
+### ============================================================================
+
+### Register - Patient
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "patient1@example.com",
+  "password": "senha123456",
+  "role": "patient"
+}
+
+### Register - Professional
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "doctor1@example.com",
+  "password": "senha123456",
+  "role": "professional"
+}
+
+### Register - Admin
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@example.com",
+  "password": "senha123456",
+  "role": "admin"
+}
+
+### Login - Patient
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "patient1@example.com",
+  "password": "senha123456"
+}
+
+### Login - Professional
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "doctor1@example.com",
+  "password": "senha123456"
+}
+
+### ============================================================================
+### 3. SPECIALTIES
+### ============================================================================
+
+### List Specialties (Public)
+GET {{baseUrl}}/api/specialties
+
+### Create Specialty (Admin) - Required token
+### Copy token from login response and paste below
+POST {{baseUrl}}/api/specialties
+Content-Type: {{contentType}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+{
+  "name": "Cardiologia",
+  "description": "Especialidade que estuda o coração e sistema cardiovascular"
+}
+
+### Create Specialty - Dermatologia
+POST {{baseUrl}}/api/specialties
+Content-Type: {{contentType}}
+Authorization: Bearer TOKEN_HERE
+
+{
+  "name": "Dermatologia",
+  "description": "Especialidade que estuda a pele"
+}
+
+### Get Specialty by ID
+GET {{baseUrl}}/api/specialties/1
+
+### ============================================================================
+### 4. PROFESSIONALS
+### ============================================================================
+
+### Create Professional Profile
+POST {{baseUrl}}/api/professionals
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "crm": "123456/SP",
+  "specialtyId": 1,
+  "bio": "Cardiologista com 15 anos de experiência"
+}
+
+### Get My Professional Profile
+GET {{baseUrl}}/api/professionals/me
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+### List All Professionals (Public)
+GET {{baseUrl}}/api/professionals
+
+### Get Professional by ID
+GET {{baseUrl}}/api/professionals/1
+
+### Update My Professional Profile
+PUT {{baseUrl}}/api/professionals/me
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "bio": "Cardiologista com 20 anos de experiência, especializado em arritmias"
+}
+
+### ============================================================================
+### 5. PATIENTS
+### ============================================================================
+
+### Create Patient Profile
+POST {{baseUrl}}/api/patients
+Content-Type: {{contentType}}
+Authorization: Bearer PATIENT_TOKEN_HERE
+
+{
+  "cpf": "12345678901",
+  "dateOfBirth": "1990-05-15T00:00:00Z",
+  "phone": "11999999999",
+  "address": "Rua Exemplo, 123 - São Paulo, SP"
+}
+
+### Get My Patient Profile
+GET {{baseUrl}}/api/patients/me
+Authorization: Bearer PATIENT_TOKEN_HERE
+
+### Update My Patient Profile
+PUT {{baseUrl}}/api/patients/me
+Content-Type: {{contentType}}
+Authorization: Bearer PATIENT_TOKEN_HERE
+
+{
+  "phone": "11988888888",
+  "address": "Nova Rua, 456 - São Paulo, SP"
+}
+
+### ============================================================================
+### 6. WORKING HOURS
+### ============================================================================
+
+### Create Working Hours (Professional)
+POST {{baseUrl}}/api/working-hours
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "weekday": 1,
+  "startTime": "09:00",
+  "endTime": "17:00",
+  "isActive": true
+}
+
+### Create Working Hours - Tuesday
+POST {{baseUrl}}/api/working-hours
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "weekday": 2,
+  "startTime": "10:00",
+  "endTime": "16:00",
+  "isActive": true
+}
+
+### Get My Working Hours
+GET {{baseUrl}}/api/working-hours/me
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+### Get Professional Working Hours
+GET {{baseUrl}}/api/working-hours/professional/1
+
+### Update Working Hours
+PUT {{baseUrl}}/api/working-hours/1
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "startTime": "08:00",
+  "endTime": "18:00"
+}
+
+### ============================================================================
+### 7. APPOINTMENTS
+### ============================================================================
+
+### Get Available Slots (Public)
+### date format: YYYY-MM-DD
+GET {{baseUrl}}/api/appointments/available-slots?professionalId=1&date=2026-05-22
+
+### Create Appointment (Patient)
+POST {{baseUrl}}/api/appointments
+Content-Type: {{contentType}}
+Authorization: Bearer PATIENT_TOKEN_HERE
+
+{
+  "professionalId": 1,
+  "scheduledStartTime": "2026-05-22T14:00:00Z",
+  "scheduledEndTime": "2026-05-22T14:30:00Z"
+}
+
+### Get My Appointments
+GET {{baseUrl}}/api/appointments/me
+Authorization: Bearer PATIENT_TOKEN_HERE
+
+### Get Appointment by ID
+GET {{baseUrl}}/api/appointments/1
+Authorization: Bearer TOKEN_HERE
+
+### Cancel Appointment (Patient)
+POST {{baseUrl}}/api/appointments/1/cancel
+Content-Type: {{contentType}}
+Authorization: Bearer PATIENT_TOKEN_HERE
+
+{
+  "cancellationReason": "Conflito com outro compromisso"
+}
+
+### ============================================================================
+### 8. MEDICAL RECORDS
+### ============================================================================
+
+### Create Medical Record (Professional)
+POST {{baseUrl}}/api/medical-records
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "patientId": 1,
+  "appointmentId": 1,
+  "recordText": "Paciente apresenta pressão elevada (150/90). Prescrever medicação antihipertensiva. Recomendado repouso e dieta com baixo sódio."
+}
+
+### Get Medical Record by ID
+GET {{baseUrl}}/api/medical-records/1
+Authorization: Bearer TOKEN_HERE
+
+### Get My Medical Records (Patient)
+GET {{baseUrl}}/api/medical-records/me
+Authorization: Bearer PATIENT_TOKEN_HERE
+
+### Add Diagnosis
+POST {{baseUrl}}/api/medical-records/1/diagnoses
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "cidCode": "I10",
+  "description": "Hipertensão essencial (primária)"
+}
+
+### Add Diagnosis - Secondary
+POST {{baseUrl}}/api/medical-records/1/diagnoses
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "cidCode": "E78.5",
+  "description": "Hiperlipidemia não especificada"
+}
+
+### Add Prescription
+POST {{baseUrl}}/api/medical-records/1/prescriptions
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "medication": "Losartana",
+  "dosage": "50mg",
+  "instructions": "Tomar 1 comprimido ao amanhecer, 1 vez ao dia",
+  "validity": "2026-06-22T00:00:00Z"
+}
+
+### Add Prescription - Atorvastatina
+POST {{baseUrl}}/api/medical-records/1/prescriptions
+Content-Type: {{contentType}}
+Authorization: Bearer PROFESSIONAL_TOKEN_HERE
+
+{
+  "medication": "Atorvastatina",
+  "dosage": "20mg",
+  "instructions": "Tomar 1 comprimido à noite, 1 vez ao dia",
+  "validity": "2026-06-22T00:00:00Z"
+}
+
+### Generate PDF of Medical Record
+GET {{baseUrl}}/api/medical-records/1/pdf
+Authorization: Bearer TOKEN_HERE
+
+### ============================================================================
+### 9. TELEMEDICINE
+### ============================================================================
+
+### Create Telemedicine Room
+POST {{baseUrl}}/api/telemedicine/rooms
+Content-Type: {{contentType}}
+Authorization: Bearer TOKEN_HERE
+
+{
+  "appointmentId": 1
+}
+
+### Get Telemedicine Room Info
+GET {{baseUrl}}/api/telemedicine/rooms/ABC12345
+Authorization: Bearer TOKEN_HERE
+
+### Get Messages in Room
+GET {{baseUrl}}/api/telemedicine/rooms/ABC12345/messages
+Authorization: Bearer TOKEN_HERE
+
+### Update Room Status to Active
+PUT {{baseUrl}}/api/telemedicine/rooms/ABC12345/status
+Content-Type: {{contentType}}
+Authorization: Bearer TOKEN_HERE
+
+{
+  "status": "active"
+}
+
+### Update Room Status to Closed
+PUT {{baseUrl}}/api/telemedicine/rooms/ABC12345/status
+Content-Type: {{contentType}}
+Authorization: Bearer TOKEN_HERE
+
+{
+  "status": "closed"
+}
+
+### Send Message in Room
+POST {{baseUrl}}/api/telemedicine/rooms/ABC12345/messages
+Content-Type: {{contentType}}
+Authorization: Bearer TOKEN_HERE
+
+{
+  "content": "Olá, como você está se sentindo?"
+}
+
+### ============================================================================
+### NOTES
+### ============================================================================
+### 1. Replace TOKEN_HERE com o token JWT da resposta de login
+### 2. Qualquer campo obrigatório não preenchido causará erro 400
+### 3. Rotas sem Authorization são públicas
+### 4. Rate limit: 100 requisições por minuto
+### 5. Cache de disponibilidade: 5 minutos

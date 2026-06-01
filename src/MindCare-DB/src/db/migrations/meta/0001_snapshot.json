@@ -1,0 +1,78 @@
+{
+  "id": "0001_bright_terror",
+  "prevId": "0000_strong_doomsday",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "emotion_logs": {
+      "name": "emotion_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "patient_id": {
+          "name": "patient_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mood_value": {
+          "name": "mood_value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "emotion_logs_patient_idx": {
+          "name": "emotion_logs_patient_idx",
+          "columns": ["patient_id"],
+          "isUnique": false
+        },
+        "emotion_logs_created_at_idx": {
+          "name": "emotion_logs_created_at_idx",
+          "columns": ["created_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "emotion_logs_patient_id_patients_id_fk": {
+          "name": "emotion_logs_patient_id_patients_id_fk",
+          "tableFrom": "emotion_logs",
+          "tableTo": "patients",
+          "columnsFrom": ["patient_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

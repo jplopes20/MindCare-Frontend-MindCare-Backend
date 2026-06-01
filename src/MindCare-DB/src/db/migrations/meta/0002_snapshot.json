@@ -1,0 +1,86 @@
+{
+  "id": "0002_soft_colossus",
+  "prevId": "0001_bright_terror",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "professional_patients": {
+      "name": "professional_patients",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "professional_id": {
+          "name": "professional_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "patient_id": {
+          "name": "patient_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "prof_patients_professional_idx": {
+          "name": "prof_patients_professional_idx",
+          "columns": ["professional_id"],
+          "isUnique": false
+        },
+        "prof_patients_patient_idx": {
+          "name": "prof_patients_patient_idx",
+          "columns": ["patient_id"],
+          "isUnique": false
+        },
+        "prof_patients_unique_pair": {
+          "name": "prof_patients_unique_pair",
+          "columns": ["professional_id", "patient_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "professional_patients_professional_id_health_professionals_id_fk": {
+          "name": "professional_patients_professional_id_health_professionals_id_fk",
+          "tableFrom": "professional_patients",
+          "tableTo": "health_professionals",
+          "columnsFrom": ["professional_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "professional_patients_patient_id_patients_id_fk": {
+          "name": "professional_patients_patient_id_patients_id_fk",
+          "tableFrom": "professional_patients",
+          "tableTo": "patients",
+          "columnsFrom": ["patient_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

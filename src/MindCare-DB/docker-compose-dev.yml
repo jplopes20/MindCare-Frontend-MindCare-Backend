@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mindcare-postgres
+    environment:
+      POSTGRES_USER: mindcare_user
+      POSTGRES_PASSWORD: mindcare_pass
+      POSTGRES_DB: mindcare_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mindcare_user -d mindcare_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: mindcare-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+
+# ============================================================================
+# USO
+# ============================================================================
+# docker-compose up                 - Inicia os serviços
+# docker-compose down               - Para os serviços
+# docker-compose logs -f            - Vê os logs
+# docker-compose ps                 - Lista containers
+#
+# Após iniciar:
+# npm run db:generate               - Gera migrations
+# npm run db:migrate                - Aplica migrations
+# npm run dev                        - Inicia o servidor
