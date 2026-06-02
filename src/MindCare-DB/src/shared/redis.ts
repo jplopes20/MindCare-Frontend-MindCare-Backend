@@ -1,4 +1,4 @@
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 
 /**
  * Configuração do Redis para cache de disponibilidade e rate limit

@@ -66,7 +66,7 @@ export async function createTelemedicineRoomController(
 }
 
 export async function getTelemedicineRoomController(req: Request, res: Response) {
-  const { roomCode } = req.params
+  const { roomCode } = req.params as { roomCode: string }
 
   const room = await db.query.telemedicineRooms.findFirst({
     where: eq(telemedicineRooms.roomCode, roomCode),
@@ -89,7 +89,7 @@ export async function updateTelemedicineRoomStatusController(
   req: Request,
   res: Response,
 ) {
-  const { roomCode } = req.params
+  const { roomCode } = req.params as { roomCode: string }
   const { status } = req.body
 
   if (!['waiting', 'active', 'closed'].includes(status)) {
@@ -120,7 +120,7 @@ export async function getTelemedicineMessagesController(
   req: Request,
   res: Response,
 ) {
-  const { roomCode } = req.params
+  const { roomCode } = req.params as { roomCode: string }
 
   const room = await db.query.telemedicineRooms.findFirst({
     where: eq(telemedicineRooms.roomCode, roomCode),
@@ -142,7 +142,7 @@ export async function saveTelemedicineMessageController(
   req: Request,
   res: Response,
 ) {
-  const { roomCode } = req.params
+  const { roomCode } = req.params as { roomCode: string }
   const body = parseBody(sendMessageSchema, req.body)
 
   const room = await db.query.telemedicineRooms.findFirst({

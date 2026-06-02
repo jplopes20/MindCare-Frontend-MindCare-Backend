@@ -8,5 +8,5 @@ import type { Request, Response, NextFunction } from 'express'
 export const asyncHandler =
   (handler: RequestHandler): RequestHandler =>
   (req: Request, res: Response, next: NextFunction) => {
-    void handler(req, res, next).catch(next)
+    Promise.resolve(handler(req, res, next)).catch(next)
   }

@@ -13,7 +13,7 @@ import {
   check,
   index,
 } from 'drizzle-orm/pg-core'
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import { users } from './users.js'
 
 // ============================================================================
@@ -168,12 +168,12 @@ export const workingHours = pgTable(
     ),
     weekdayCheck: check(
       'weekday_range',
-      `weekday >= 0 AND weekday <= 6`,
+      sql`weekday >= 0 AND weekday <= 6`,
     ),
     // Garante que startTime < endTime
     timeCheck: check(
       'start_before_end',
-      `start_time < end_time`,
+      sql`start_time < end_time`,
     ),
   }),
 )
