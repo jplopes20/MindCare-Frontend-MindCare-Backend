@@ -64,10 +64,16 @@ try {
   process.exit(1)
 }
 
-httpServer.listen(port, async () => {
+// Tenta popular banco com dados iniciais (só roda se estiver vazio)
+try {
+  await seedIfEmpty()
+} catch (err) {
+  console.error('[SEED] Erro ao popular banco:', err)
+}
+
+httpServer.listen(port, () => {
   console.log(`🚀 MindCare API em http://localhost:${port}`)
   console.log(`🔌 Socket.io ativo (CORS: ${corsOrigin})`)
   console.log(`📚 Health check: GET http://localhost:${port}/health`)
-  await seedIfEmpty()
 })
 

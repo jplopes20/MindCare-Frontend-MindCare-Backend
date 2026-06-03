@@ -24,8 +24,8 @@ export async function seedIfEmpty() {
       console.log('[seed] Banco já populado — pulando')
       return
     }
-  } catch {
-    console.log('[seed] Erro ao verificar banco — pulando')
+  } catch (err) {
+    console.error('[seed] Erro ao verificar banco — pulando:', err)
     return
   }
 
