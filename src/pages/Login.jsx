@@ -7,7 +7,7 @@ export default function Login() {
   const nav = useNavigate()
   const { login, register, error, clearError, loading } = useAuth()
 
-  const [email, setEmail] = useState('paciente@mindcare.com')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('123456')
   const [role, setRole] = useState('patient')
   const [isRegister, setIsRegister] = useState(false)
