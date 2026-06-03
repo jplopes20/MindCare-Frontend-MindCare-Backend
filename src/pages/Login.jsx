@@ -8,7 +8,7 @@ export default function Login() {
   const { login, register, error, clearError, loading } = useAuth()
 
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('123456')
+  const [password, setPassword] = useState('')
   const [role, setRole] = useState('patient')
   const [isRegister, setIsRegister] = useState(false)
   const [localError, setLocalError] = useState(null)
