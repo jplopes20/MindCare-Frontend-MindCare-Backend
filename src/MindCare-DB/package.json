@@ -12,6 +12,7 @@
     "db:migrate": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed.ts",
+    "db:seed-once": "tsx scripts/seed-once.ts",
     "smoke": "bash scripts/smoke-api.sh",
     "smoke:all": "bash scripts/run-all.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
