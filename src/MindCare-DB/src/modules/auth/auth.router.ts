@@ -15,12 +15,12 @@ import { getJwtSecret } from './jwt-secret.js'
 const router = Router()
 
 function isUniqueViolation(err: unknown): boolean {
-  return (
-    typeof err === 'object' &&
-    err !== null &&
-    'code' in err &&
-    (err as { code: string }).code === '23505'
-  )
+  const cause =
+    typeof err === 'object' && err !== null && 'cause' in err
+      ? (err as { cause: unknown }).cause
+      : err
+  if (typeof cause !== 'object' || cause === null) return false
+  return (cause as { code?: string }).code === '23505'
 }
 
 function asyncRoute(

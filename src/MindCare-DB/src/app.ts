@@ -14,6 +14,8 @@ import { emotionsRouter } from './modules/domain/emotions.router.js'
 import { dashboardRouter } from './modules/domain/dashboard.router.js'
 import { aiAssistantRouter } from './modules/domain/ai-assistant.router.js'
 import { reportsRouter } from './modules/domain/reports.router.js'
+import { adminRouter } from './modules/domain/admin.router.js'
+import { notificationsRouter } from './modules/domain/notifications.router.js'
 
 const app = express()
 
@@ -76,6 +78,12 @@ app.use('/api', aiAssistantRouter)
 // Reports (CRUD)
 app.use('/api', reportsRouter)
 
+// Admin (metrics, users, etc.)
+app.use('/api', adminRouter)
+
+// Notifications
+app.use('/api', notificationsRouter)
+
 // ============================================================================
 // ERROR HANDLER
 // ============================================================================
@@ -86,18 +94,14 @@ app.use(
       return res.status(err.statusCode).json({ error: err.message })
     }
 
-    console.error(err)
-    const body: { error: string; details?: string } = {
+    const msg =
+      err instanceof Error ? err.stack || err.message : String(err)
+    console.error('[ERRO]', msg)
+
+    res.status(500).json({
       error: 'Erro interno do servidor',
-    }
-    if (process.env.NODE_ENV !== 'production') {
-      if (err instanceof Error) {
-        body.details = err.message
-      } else {
-        body.details = String(err)
-      }
-    }
-    return res.status(500).json(body)
+      details: msg,
+    })
   },
 )
 

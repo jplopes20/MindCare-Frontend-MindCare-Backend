@@ -27,7 +27,7 @@ export default function Login() {
 
   function roleRedirect(userRole) {
     if (userRole === 'professional') return '/professional'
-    if (userRole === 'admin') return '/professional'
+    if (userRole === 'admin') return '/admin'
     return '/patient'
   }
 

@@ -415,3 +415,16 @@ Para questões ou issues:
 - [Redis](https://redis.io/)
 - [TypeScript](https://www.typescriptlang.org/)
 
+## Testes
+
+```bash
+# Rodar todos os testes
+npm test
+
+# Rodar em modo watch
+npm run test:watch
+
+# Gerar relatório de cobertura
+npm run test:coverage
+```
+

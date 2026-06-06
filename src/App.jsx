@@ -8,6 +8,9 @@ import DashboardPatient from './pages/DashboardPatient'
 import DashboardProfessional from './pages/DashboardProfessional'
 import Teleconsulta from './pages/Teleconsulta'
 import EHR from './pages/EHR'
+import DashboardAdmin from './pages/DashboardAdmin'
+import NotificationBell from './components/NotificationBell.jsx'
+import NotificationsPage from './pages/NotificationsPage'
 
 function Topbar() {
   const { user, logout } = useAuth()
@@ -19,7 +22,7 @@ function Topbar() {
         {!user && <Link to="/login">Login</Link>}
         {user?.role === 'patient' && <Link to="/patient">Paciente</Link>}
         {user?.role === 'professional' && <Link to="/professional">Profissional</Link>}
-        {user?.role === 'admin' && <Link to="/professional">Admin</Link>}
+        {user?.role === 'admin' && <Link to="/admin">Admin</Link>}
         {(user?.role === 'patient' || user?.role === 'admin') && (
           <Link to="/teleconsulta">Teleconsulta</Link>
         )}
@@ -30,7 +33,8 @@ function Topbar() {
           <Link to="/teleconsulta">Teleconsulta</Link>
         )}
       </nav>
-      <div style={{ marginLeft: 12 }}>
+      <div style={{ marginLeft: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+        {user && <NotificationBell />}
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ fontSize: 13 }}>
@@ -66,7 +70,7 @@ function AppRoutes() {
         element={
           user ? (
             <Navigate
-              to={user.role === 'professional' ? '/professional' : '/patient'}
+              to={user.role === 'admin' ? '/admin' : user.role === 'professional' ? '/professional' : '/patient'}
               replace
             />
           ) : (
@@ -96,6 +100,16 @@ function AppRoutes() {
         }
       />
 
+      {/* Admin routes */}
+      <Route
+        path="/admin/*"
+        element={
+          <ProtectedRoute roles={['admin']}>
+            <DashboardAdmin />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Teleconsulta */}
       <Route
         path="/teleconsulta"
@@ -112,6 +126,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute roles={['patient', 'professional', 'admin']}>
             <EHR />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Notifications */}
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute roles={['patient', 'professional', 'admin']}>
+            <NotificationsPage />
           </ProtectedRoute>
         }
       />
