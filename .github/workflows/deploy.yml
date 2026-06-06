@@ -1,0 +1,33 @@
+name: MindCare Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy instruction
+        run: echo "Deploy para Render — configurar RENDER_DEPLOY_HOOK_URL nos secrets do repositório"
+
+      - name: Trigger Render deploy hook
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+      - name: Print setup instructions
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL == '' }}
+        run: |
+          echo "============================================"
+          echo "RENDER_DEPLOY_HOOK_URL not configured."
+          echo "To enable auto-deploy on Render:"
+          echo "  1. Go to your Render dashboard"
+          echo "  2. Open your service → Settings → Deploy Hooks"
+          echo "  3. Copy the deploy hook URL"
+          echo "  4. Add it as a repository secret:"
+          echo "     https://github.com/$(echo $GITHUB_REPOSITORY)/settings/secrets/actions"
+          echo "     Secret name: RENDER_DEPLOY_HOOK_URL"
+          echo "============================================"

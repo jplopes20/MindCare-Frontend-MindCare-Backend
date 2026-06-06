@@ -16,6 +16,8 @@ import { aiAssistantRouter } from './modules/domain/ai-assistant.router.js'
 import { reportsRouter } from './modules/domain/reports.router.js'
 import { adminRouter } from './modules/domain/admin.router.js'
 import { notificationsRouter } from './modules/domain/notifications.router.js'
+import swaggerUi from 'swagger-ui-express'
+import { swaggerSpec } from './shared/swagger.js'
 
 const app = express()
 
@@ -31,6 +33,13 @@ app.use(express.json())
 // app.use(rateLimitMiddleware)
 
 // ============================================================================
+// SWAGGER UI (público)
+// ============================================================================
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.get('/docs.json', (_req: Request, res: Response) => res.json(swaggerSpec))
+
+// ============================================================================
 // ROOT & HEALTH CHECK
 // ============================================================================
 
@@ -38,7 +47,8 @@ app.get('/', (_req: Request, res: Response) => {
   res.json({
     name: 'MindCare API',
     version: '1.0.0',
-    docs: '/health',
+    docs: '/docs',
+    docsJson: '/docs.json',
     frontend: 'http://localhost:5173',
   })
 })

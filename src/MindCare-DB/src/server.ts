@@ -7,6 +7,7 @@ import { setupTelemedicineSocket } from './modules/domain/socket-handlers.js'
 import { sql } from 'drizzle-orm'
 import { db } from './db/index.js'
 import { seedIfEmpty } from './db/seed.js'
+import { startScheduler } from './shared/scheduler.js'
 
 // Captura erros não tratados (promises rejeitadas sem catch)
 process.on('unhandledRejection', (reason) => {
@@ -75,5 +76,7 @@ httpServer.listen(port, () => {
   console.log(`🚀 MindCare API em http://localhost:${port}`)
   console.log(`🔌 Socket.io ativo (CORS: ${corsOrigin})`)
   console.log(`📚 Health check: GET http://localhost:${port}/health`)
+
+  startScheduler()
 })
 

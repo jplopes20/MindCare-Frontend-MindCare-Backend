@@ -1,0 +1,7 @@
+node_modules
+dist
+.env
+.env.*
+*.log
+src/MindCare-DB/node_modules
+src/MindCare-DB/dist

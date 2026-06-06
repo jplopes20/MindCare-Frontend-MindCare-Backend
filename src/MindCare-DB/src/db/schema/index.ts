@@ -1,4 +1,5 @@
 export { userRoleEnum, users } from './users.js'
+export { aiActionTypeEnum, aiLogs, aiLogsRelations } from './domain.js'
 export {
   patients,
   healthProfessionals,

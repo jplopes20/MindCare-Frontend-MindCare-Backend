@@ -8,6 +8,7 @@ import {
   patients,
   healthProfessionals,
   users,
+  notifications,
 } from '../../db/schema/index.js'
 import { AppError } from '../../shared/errors.js'
 import { parseBody } from '../../shared/validate.js'
@@ -285,6 +286,16 @@ export async function createAppointmentController(req: Request, res: Response) {
     .catch((err: unknown) =>
       console.error('[Email] Failed to send request notification:', err),
     )
+
+  const dateTime = new Date(body.scheduledStartTime).toLocaleString('pt-BR')
+  await db.insert(notifications).values({
+    userId: patientRow.userId,
+    type: 'appointment_scheduled',
+    status: 'unread',
+    title: 'Consulta agendada',
+    message: `Sua consulta foi agendada para ${dateTime}`,
+    relatedAppointmentId: appointment.id,
+  })
 
   res.status(201).json(appointment)
 }

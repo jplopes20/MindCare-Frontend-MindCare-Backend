@@ -706,6 +706,66 @@ export const reportsRelations = relations(reports, ({ one }) => ({
   }),
 }))
 
+// ============================================================================
+// AI Logs
+// ============================================================================
+
+export const aiActionTypeEnum = pgEnum('ai_action_type', [
+  'draft_record',
+  'improve_text',
+  'suggest_diagnosis',
+  'summarize',
+  'other',
+])
+
+export const aiLogs = pgTable(
+  'ai_logs',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id),
+    professionalId: integer('professional_id')
+      .references(() => healthProfessionals.id),
+    medicalRecordId: integer('medical_record_id')
+      .references(() => medicalRecords.id),
+    actionType: aiActionTypeEnum('action_type').notNull(),
+    prompt: text('prompt').notNull(),
+    response: text('response'),
+    model: varchar('model', { length: 100 }),
+    tokensUsed: integer('tokens_used'),
+    durationMs: integer('duration_ms'),
+    success: boolean('success').notNull().default(true),
+    errorMessage: text('error_message'),
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userIdx: index('ai_logs_user_idx').on(table.userId),
+    professionalIdx: index('ai_logs_professional_idx').on(table.professionalId),
+    medicalRecordIdx: index('ai_logs_medical_record_idx').on(table.medicalRecordId),
+    createdAtIdx: index('ai_logs_created_at_idx').on(table.createdAt),
+    actionTypeIdx: index('ai_logs_action_type_idx').on(table.actionType),
+  }),
+)
+
+export const aiLogsRelations = relations(aiLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [aiLogs.userId],
+    references: [users.id],
+  }),
+  professional: one(healthProfessionals, {
+    fields: [aiLogs.professionalId],
+    references: [healthProfessionals.id],
+  }),
+  medicalRecord: one(medicalRecords, {
+    fields: [aiLogs.medicalRecordId],
+    references: [medicalRecords.id],
+  }),
+}))
+
 export const telemedicineRoomsRelations = relations(
   telemedicineRooms,
   ({ one, many }) => ({
