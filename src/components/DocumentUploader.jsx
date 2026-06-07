@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { uploadDocument } from '../services/documents.js'
+import { uploadDocument, uploadFromUrl, uploadFromDrive } from '../services/documents.js'
 
 const ALLOWED_TYPES = [
   'application/pdf',
@@ -23,7 +23,7 @@ const documentTypeOptions = [
 ]
 
 export default function DocumentUploader({ onClose, onSuccess, patientId }) {
-  const [activeTab, setActiveTab] = useState('device')
+  const [activeTab, setActiveTab] = useState('local')
   const [title, setTitle] = useState('')
   const [docType, setDocType] = useState('other')
   const [description, setDescription] = useState('')
@@ -34,7 +34,9 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
 
   const fileInputRef = useRef(null)
   const [selectedFile, setSelectedFile] = useState(null)
-  const [driveFile, setDriveFile] = useState(null)
+  const [driveFileId, setDriveFileId] = useState('')
+  const [driveFileName, setDriveFileName] = useState('')
+  const [driveMimeType, setDriveMimeType] = useState('')
   const [url, setUrl] = useState('')
 
   function resetForm() {
@@ -42,7 +44,9 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
     setDocType('other')
     setDescription('')
     setSelectedFile(null)
-    setDriveFile(null)
+    setDriveFileId('')
+    setDriveFileName('')
+    setDriveMimeType('')
     setUrl('')
     setError(null)
     setSuccess(null)
@@ -106,60 +110,8 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
     }
   }
 
-  function openGooglePicker() {
-    if (typeof window === 'undefined' || typeof window.gapi === 'undefined') {
-      loadGoogleApi()
-    } else {
-      createPicker()
-    }
-  }
-
-  function loadGoogleApi() {
-    const script = document.createElement('script')
-    script.src = 'https://apis.google.com/js/api.js'
-    script.onload = () => {
-      window.gapi.load('picker', { callback: createPicker })
-    }
-    document.body.appendChild(script)
-  }
-
-  function createPicker() {
-    const apiKey = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY
-    const clientId = import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID
-
-    if (!apiKey || !clientId) {
-      setError(
-        'Google Drive não configurado. Adicione VITE_GOOGLE_DRIVE_API_KEY e VITE_GOOGLE_DRIVE_CLIENT_ID no .env',
-      )
-      return
-    }
-
-    const picker = new window.google.picker.PickerBuilder()
-      .addView(window.google.picker.ViewId.DOCS)
-      .setOAuthToken(clientId)
-      .setDeveloperKey(apiKey)
-      .setCallback(pickerCallback)
-      .build()
-    picker.setVisible(true)
-  }
-
-  function pickerCallback(data) {
-    if (data.action === window.google.picker.Action.PICKED) {
-      const doc = data.docs[0]
-      setDriveFile({
-        id: doc.id,
-        name: doc.name,
-        mimeType: doc.mimeType,
-        url: doc.url,
-        downloadUrl: doc.downloadUrl || doc.url,
-      })
-      if (!title) setTitle(doc.name.replace(/\.[^.]+$/, ''))
-      setError(null)
-    }
-  }
-
-  async function handleDriveUpload() {
-    if (!driveFile) { setError('Selecione um arquivo do Google Drive'); return }
+  async function handleUrlUpload() {
+    if (!url.trim()) { setError('Informe uma URL'); return }
     if (!title.trim()) { setError('Informe um título'); return }
 
     setError(null)
@@ -167,32 +119,45 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
     setProgress(10)
 
     try {
-      const token = localStorage.getItem('mindcare:auth_token')
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/documents/upload-from-drive`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            googleFileId: driveFile.id,
-            googleFileName: driveFile.name,
-            googleMimeType: driveFile.mimeType,
-            title: title.trim(),
-            documentType: docType,
-            description: description || undefined,
-            patientId: patientId ? Number(patientId) : undefined,
-          }),
-        },
+      const result = await uploadFromUrl(
+        url.trim(),
+        title.trim(),
+        docType,
+        description || undefined,
+        patientId ? Number(patientId) : undefined,
       )
+      setProgress(100)
+      setSuccess('Documento importado da URL com sucesso!')
+      setTimeout(() => {
+        onSuccess?.()
+        onClose?.()
+      }, 1500)
+    } catch (err) {
+      setError(err?.message || 'Erro ao importar da URL')
+    } finally {
+      setUploading(false)
+    }
+  }
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Erro ao importar do Google Drive')
-      }
+  async function handleDriveUpload() {
+    if (!driveFileId.trim()) { setError('Informe o ID do arquivo do Google Drive'); return }
+    if (!driveFileName.trim()) { setError('Informe o nome do arquivo'); return }
+    if (!title.trim()) { setError('Informe um título'); return }
 
+    setError(null)
+    setUploading(true)
+    setProgress(10)
+
+    try {
+      const result = await uploadFromDrive(
+        driveFileId.trim(),
+        driveFileName.trim(),
+        driveMimeType || 'application/octet-stream',
+        title.trim(),
+        docType,
+        description || undefined,
+        patientId ? Number(patientId) : undefined,
+      )
       setProgress(100)
       setSuccess('Documento importado do Google Drive com sucesso!')
       setTimeout(() => {
@@ -206,51 +171,11 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
     }
   }
 
-  async function handleUrlUpload() {
-    if (!url.trim()) { setError('Informe uma URL'); return }
-    if (!title.trim()) { setError('Informe um título'); return }
-
-    setError(null)
-    setUploading(true)
-    setProgress(10)
-
-    try {
-      const token = localStorage.getItem('mindcare:auth_token')
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/documents/upload-from-url`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            url: url.trim(),
-            title: title.trim(),
-            documentType: docType,
-            description: description || undefined,
-            patientId: patientId ? Number(patientId) : undefined,
-          }),
-        },
-      )
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Erro ao importar da URL')
-      }
-
-      setProgress(100)
-      setSuccess('Documento importado da URL com sucesso!')
-      setTimeout(() => {
-        onSuccess?.()
-        onClose?.()
-      }, 1500)
-    } catch (err) {
-      setError(err?.message || 'Erro ao importar da URL')
-    } finally {
-      setUploading(false)
-    }
-  }
+  const driveConfigured = Boolean(
+    import.meta.env.VITE_GOOGLE_DRIVE_API_KEY ||
+    import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID ||
+    import.meta.env.VITE_GOOGLE_DRIVE_ACCESS_TOKEN,
+  )
 
   return (
     <div
@@ -276,7 +201,7 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        {['device', 'drive', 'url'].map((tab) => (
+        {['local', 'url', 'drive'].map((tab) => (
           <button
             key={tab}
             className="btn"
@@ -291,7 +216,7 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
               opacity: activeTab === tab ? 1 : 0.7,
             }}
           >
-            {tab === 'device' ? 'Dispositivo' : tab === 'drive' ? 'Google Drive' : 'Link Externo'}
+            {tab === 'local' ? 'Dispositivo' : tab === 'url' ? 'Link Externo' : 'Google Drive'}
           </button>
         ))}
       </div>
@@ -334,7 +259,19 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
         />
       </div>
 
-      {activeTab === 'device' && (
+      {patientId && (
+        <div className="form-group">
+          <label>Paciente (ID)</label>
+          <input
+            type="text"
+            value={patientId}
+            disabled
+            style={{ opacity: 0.6 }}
+          />
+        </div>
+      )}
+
+      {activeTab === 'local' && (
         <div style={{ marginTop: 16 }}>
           <div
             style={{
@@ -386,41 +323,6 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
         </div>
       )}
 
-      {activeTab === 'drive' && (
-        <div style={{ marginTop: 16 }}>
-          {!driveFile ? (
-            <button
-              className="btn"
-              onClick={openGooglePicker}
-              disabled={uploading}
-              style={{ width: '100%', padding: 14 }}
-            >
-              Selecionar do Google Drive
-            </button>
-          ) : (
-            <div
-              style={{
-                border: '1px solid rgba(0,212,255,0.2)',
-                borderRadius: 10,
-                padding: 16,
-                background: 'rgba(0,212,255,0.04)',
-              }}
-            >
-              <div style={{ fontSize: 14, fontWeight: 600 }}>{driveFile.name}</div>
-              <div style={{ fontSize: 11, opacity: 0.5, marginTop: 2 }}>{driveFile.mimeType}</div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <button className="btn" onClick={handleDriveUpload} disabled={uploading} style={{ flex: 1 }}>
-                  {uploading ? 'Importando...' : 'Importar do Drive'}
-                </button>
-                <button className="btn-ghost" onClick={() => setDriveFile(null)}>
-                  Trocar
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       {activeTab === 'url' && (
         <div style={{ marginTop: 16 }}>
           <div className="form-group">
@@ -439,6 +341,63 @@ export default function DocumentUploader({ onClose, onSuccess, patientId }) {
             style={{ marginTop: 12, width: '100%' }}
           >
             {uploading ? 'Importando...' : 'Importar da URL'}
+          </button>
+        </div>
+      )}
+
+      {activeTab === 'drive' && (
+        <div style={{ marginTop: 16 }}>
+          {!driveConfigured && (
+            <div
+              style={{
+                color: '#ffab40',
+                fontSize: 12,
+                marginBottom: 12,
+                padding: '8px 12px',
+                background: 'rgba(255,171,64,0.1)',
+                borderRadius: 8,
+              }}
+            >
+              Google Drive não configurado no servidor. Defina as variáveis de ambiente no backend para habilitar o download.
+            </div>
+          )}
+          <div className="form-group">
+            <label>ID do Arquivo *</label>
+            <input
+              type="text"
+              value={driveFileId}
+              onChange={e => setDriveFileId(e.target.value)}
+              placeholder="ID do arquivo no Google Drive"
+            />
+          </div>
+          <div className="form-group">
+            <label>Nome do Arquivo *</label>
+            <input
+              type="text"
+              value={driveFileName}
+              onChange={e => {
+                setDriveFileName(e.target.value)
+                if (!title) setTitle(e.target.value.replace(/\.[^.]+$/, ''))
+              }}
+              placeholder="exemplo.pdf"
+            />
+          </div>
+          <div className="form-group">
+            <label>Tipo MIME</label>
+            <input
+              type="text"
+              value={driveMimeType}
+              onChange={e => setDriveMimeType(e.target.value)}
+              placeholder="application/pdf"
+            />
+          </div>
+          <button
+            className="btn"
+            onClick={handleDriveUpload}
+            disabled={uploading || !driveFileId.trim() || !driveFileName.trim()}
+            style={{ marginTop: 12, width: '100%' }}
+          >
+            {uploading ? 'Importando...' : 'Importar do Drive'}
           </button>
         </div>
       )}

@@ -15,6 +15,10 @@ router.post(
   asyncHandler(controllers.uploadDocumentController),
 )
 
+/**
+ * POST /documents/upload-from-url
+ * Importa um documento a partir de uma URL externa (requer autenticação, paciente/profissional/admin)
+ */
 router.post(
   '/documents/upload-from-url',
   authGuard,
@@ -22,6 +26,10 @@ router.post(
   asyncHandler(controllers.uploadFromUrlController),
 )
 
+/**
+ * POST /documents/upload-from-drive
+ * Importa um documento do Google Drive informando ID, nome e MIME type (requer autenticação, paciente/profissional/admin)
+ */
 router.post(
   '/documents/upload-from-drive',
   authGuard,
