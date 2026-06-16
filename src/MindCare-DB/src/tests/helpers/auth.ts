@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken'
 import { getJwtSecret } from '../../modules/auth/jwt-secret.js'
 
-export function signTokenFor(user: { id: number; email: string; role: 'patient' | 'professional' | 'admin' }, expiresIn = '24h') {
-  return jwt.sign({ sub: String(user.id), email: user.email, role: user.role }, getJwtSecret(), { expiresIn })
+export function signTokenFor(user: { id: number; email: string; role: 'patient' | 'professional' | 'admin' }, expiresIn: string = '24h') {
+  return jwt.sign({ sub: String(user.id), email: user.email, role: user.role }, getJwtSecret(), { expiresIn } as jwt.SignOptions)
 }
 
 export function expiredToken(user: { id: number; email: string; role: string }) {
