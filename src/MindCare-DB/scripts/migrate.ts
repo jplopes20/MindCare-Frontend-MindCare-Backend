@@ -28,6 +28,23 @@ async function main() {
     .filter((f) => /^\d+.*\.sql$/.test(f))
     .sort()
 
+  // First run — table was just created (or was empty), so all SQL files
+  // were already applied by previous drizzle-kit push runs.
+  // Pre-populate the tracking table with all existing migration tags.
+  const [{ count }] = await sql`SELECT count(*)::int AS count FROM drizzle.__migrations`
+  if (count === 0) {
+    console.log('[migrate]  Primeira execução — registrando migrações existentes...')
+    for (const file of files) {
+      const tag = file.replace(/\.sql$/, '')
+      await sql`INSERT INTO drizzle.__migrations (tag) VALUES (${tag}) ON CONFLICT DO NOTHING`
+      console.log(`[migrate]  ${tag} — registrada`)
+    }
+    console.log(`[migrate]  ${files.length} migrações registradas`)
+    await sql.end()
+    return
+  }
+
+  // Subsequent runs — apply only pending migrations
   for (const file of files) {
     const tag = file.replace(/\.sql$/, '')
     const [existing] = await sql`SELECT 1 FROM drizzle.__migrations WHERE tag = ${tag}`
