@@ -79,9 +79,10 @@ export const patients = pgTable(
     id: serial('id').primaryKey(),
     userId: integer('user_id').notNull().unique().references(() => users.id),
     name: varchar('name', { length: 255 }),
-    cpf: varchar('cpf', { length: 11 }).unique(),
+    cpf: varchar('cpf', { length: 255 }),
+    cpfHash: varchar('cpf_hash', { length: 64 }).unique(),
     dateOfBirth: timestamp('date_of_birth'),
-    phone: varchar('phone', { length: 20 }),
+    phone: varchar('phone', { length: 255 }),
     address: text('address'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()

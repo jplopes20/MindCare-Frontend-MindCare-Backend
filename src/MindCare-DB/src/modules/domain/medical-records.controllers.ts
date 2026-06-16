@@ -51,6 +51,27 @@ export async function getMedicalRecordController(req: Request, res: Response) {
     throw new AppError(404, 'Prontuário não encontrado')
   }
 
+  // CT010 — Access control: patient can only see own records
+  if (req.user!.role === 'patient') {
+    const patientList = await db
+      .select()
+      .from(patients)
+      .where(eq(patients.userId, req.user!.id))
+
+    if (patientList.length === 0 || patientList[0]!.id !== record.patientId) {
+      throw new AppError(403, 'Acesso negado')
+    }
+  } else if (req.user!.role === 'professional') {
+    const profList = await db
+      .select()
+      .from(healthProfessionals)
+      .where(eq(healthProfessionals.userId, req.user!.id))
+
+    if (profList.length === 0 || profList[0]!.id !== record.professionalId) {
+      throw new AppError(403, 'Acesso negado')
+    }
+  }
+
   res.json(record)
 }
 

@@ -6,6 +6,7 @@ import { authGuard } from '../auth/auth.middleware.js'
 import { requireRole } from '../auth/rbac.middleware.js'
 import { asyncHandler } from '../../shared/async-handler.js'
 import { AppError } from '../../shared/errors.js'
+import { auditAccess } from '../../shared/audit-access.middleware.js'
 import * as controllers from './controllers.js'
 
 const router = Router()
@@ -33,6 +34,7 @@ router.get(
   '/patients/me',
   authGuard,
   requireRole(['patient']),
+  auditAccess('patients'),
   asyncHandler(controllers.getMyPatientProfileController),
 )
 
@@ -55,6 +57,7 @@ router.put(
 router.get(
   '/patients/:id',
   authGuard,
+  auditAccess('patients'),
   asyncHandler(async (req, res, next) => {
     const { id } = req.params
     const userId = Number(id)
@@ -76,6 +79,7 @@ router.get(
   '/patients',
   authGuard,
   requireRole(['admin']),
+  auditAccess('patients'),
   asyncHandler(controllers.getAllPatientsController),
 )
 
@@ -131,6 +135,7 @@ router.get(
   '/professionals/me',
   authGuard,
   requireRole(['professional']),
+  auditAccess('health_professionals'),
   asyncHandler(controllers.getMyProfessionalProfileController),
 )
 
@@ -151,6 +156,7 @@ router.put(
  */
 router.get(
   '/professionals/:id',
+  auditAccess('health_professionals'),
   asyncHandler(controllers.getProfessionalByIdController),
 )
 
@@ -160,6 +166,7 @@ router.get(
  */
 router.get(
   '/professionals',
+  auditAccess('health_professionals'),
   asyncHandler(controllers.getAllProfessionalsController),
 )
 
@@ -171,6 +178,7 @@ router.get(
   '/professionals/me/patients',
   authGuard,
   requireRole(['professional']),
+  auditAccess('patients'),
   asyncHandler(controllers.getMyPatientsController),
 )
 
@@ -182,6 +190,7 @@ router.get(
   '/professionals/me/all-patients',
   authGuard,
   requireRole(['professional', 'admin']),
+  auditAccess('patients'),
   asyncHandler(controllers.getAllPatientsForProfessionalController),
 )
 
@@ -204,6 +213,7 @@ router.get(
   '/professionals/me/summary',
   authGuard,
   requireRole(['professional']),
+  auditAccess('health_professionals'),
   asyncHandler(controllers.getProfessionalSummaryController),
 )
 

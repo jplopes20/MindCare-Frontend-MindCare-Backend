@@ -32,12 +32,15 @@ describe('loginSchema', () => {
   })
 })
 
+const validConsents = [{ consentTermId: 1, accepted: true }]
+
 describe('registerSchema', () => {
   it('deve aceitar registro válido com role patient', () => {
     const result = registerSchema.safeParse({
       email: 'new@test.com',
       password: '12345678',
       role: 'patient',
+      consents: validConsents,
     })
     expect(result.success).toBe(true)
   })
@@ -47,6 +50,17 @@ describe('registerSchema', () => {
       email: 'prof@test.com',
       password: '12345678',
       role: 'professional',
+      consents: validConsents,
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('deve aceitar registro válido com role admin', () => {
+    const result = registerSchema.safeParse({
+      email: 'admin@test.com',
+      password: '12345678',
+      role: 'admin',
+      consents: validConsents,
     })
     expect(result.success).toBe(true)
   })
@@ -56,6 +70,7 @@ describe('registerSchema', () => {
       email: 'user@test.com',
       password: '12345678',
       role: 'superuser',
+      consents: validConsents,
     })
     expect(result.success).toBe(false)
   })
@@ -64,6 +79,7 @@ describe('registerSchema', () => {
     const result = registerSchema.safeParse({
       password: '12345678',
       role: 'patient',
+      consents: validConsents,
     })
     expect(result.success).toBe(false)
   })
@@ -73,6 +89,27 @@ describe('registerSchema', () => {
       email: 'user@test.com',
       password: '123',
       role: 'patient',
+      consents: validConsents,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('deve rejeitar quando consents está ausente', () => {
+    const result = registerSchema.safeParse({
+      email: 'user@test.com',
+      password: '12345678',
+      role: 'patient',
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('deve rejeitar quando consents tem campo extra', () => {
+    const result = registerSchema.safeParse({
+      email: 'user@test.com',
+      password: '12345678',
+      role: 'patient',
+      consents: validConsents,
+      extraField: 'x',
     })
     expect(result.success).toBe(false)
   })

@@ -123,6 +123,16 @@ curl -X POST http://localhost:4000/auth/login \
 - [ ] Helmet ativo (headers de segurança)
 - [ ] CORS configurado
 
+## 🧪 Testes de Segurança e LGPD
+```bash
+cd src/MindCare-DB && npm test
+```
+- [ ] CT010 — Acesso negado (403) quando paciente tenta ler prontuário de outro paciente
+- [ ] CT011 — Token expirado retorna 401, token malformado retorna 401
+- [ ] CT012 — Paciente solicita exclusão (201), admin aprova com anonimização, audit_log gerado, paciente não pode aprovar (403)
+- [ ] Cobertura mínima esperada nos módulos `auth/` e `domain/lgpd*`
+- [ ] Helper `expiredToken` e `signTokenFor` reutilizáveis em `tests/helpers/auth.ts`
+
 ## 📝 Código
 - [ ] TypeScript compila sem erros (`npm run build`)
 - [ ] Sem warnings ESLint

@@ -2,10 +2,10 @@ import { Router } from 'express'
 import type { Request, Response, NextFunction } from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { users } from '../../db/schema/users.js'
-import { patients } from '../../db/schema/index.js'
+import { patients, consentTerms, userConsents } from '../../db/schema/index.js'
 import { AppError } from '../../shared/errors.js'
 import { parseBody } from '../../shared/validate.js'
 import { loginSchema, registerSchema } from './schemas.js'
@@ -37,6 +37,17 @@ router.post(
     const body = parseBody(registerSchema, req.body)
     const passwordHash = await bcrypt.hash(body.password, 10)
 
+    // Validate consent terms exist and are active
+    const consentTermIds = body.consents.map((c) => c.consentTermId)
+    const activeTerms = await db
+      .select({ id: consentTerms.id })
+      .from(consentTerms)
+      .where(inArray(consentTerms.id, consentTermIds))
+
+    if (activeTerms.length !== consentTermIds.length) {
+      throw new AppError(400, 'Um ou mais termos de consentimento são inválidos')
+    }
+
     try {
       const [row] = await db
         .insert(users)
@@ -54,6 +65,16 @@ router.post(
       if (!row) {
         throw new AppError(500, 'Falha ao criar usuário')
       }
+
+      // Register consents
+      await db.insert(userConsents).values(
+        body.consents.map((c) => ({
+          userId: row.id,
+          consentTermId: c.consentTermId,
+          accepted: c.accepted,
+          ipAddress: req.ip,
+        })),
+      )
 
       // Auto-create patient profile (all fields optional)
       if (row.role === 'patient') {

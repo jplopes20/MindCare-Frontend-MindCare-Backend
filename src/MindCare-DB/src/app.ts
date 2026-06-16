@@ -16,6 +16,8 @@ import { aiAssistantRouter } from './modules/domain/ai-assistant.router.js'
 import { reportsRouter } from './modules/domain/reports.router.js'
 import { adminRouter } from './modules/domain/admin.router.js'
 import { notificationsRouter } from './modules/domain/notifications.router.js'
+import { lgpdRouter } from './modules/domain/lgpd.router.js'
+import { consentRouter } from './modules/domain/consent.router.js'
 import swaggerUi from 'swagger-ui-express'
 import { swaggerSpec } from './shared/swagger.js'
 
@@ -93,6 +95,12 @@ app.use('/api', adminRouter)
 
 // Notifications
 app.use('/api', notificationsRouter)
+
+// LGPD / Data Deletion
+app.use('/api', lgpdRouter)
+
+// Consent Terms
+app.use('/api', consentRouter)
 
 // ============================================================================
 // ERROR HANDLER

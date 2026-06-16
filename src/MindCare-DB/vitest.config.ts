@@ -10,6 +10,7 @@ export default defineConfig({
       REDIS_HOST: 'localhost',
       REDIS_PORT: '6379',
       CORS_ORIGIN: 'http://localhost:5173',
+      ENCRYPTION_KEY: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
     },
     coverage: {
       provider: 'v8',

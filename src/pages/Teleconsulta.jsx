@@ -31,6 +31,8 @@ export default function Teleconsulta() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [callActive, setCallActive] = useState(false)
+  const [isScreenSharing, setIsScreenSharing] = useState(false)
+  const [remoteIsScreenSharing, setRemoteIsScreenSharing] = useState(false)
 
   const localVideoRef = useRef(null)
   const remoteVideoRef = useRef(null)
@@ -92,6 +94,8 @@ export default function Teleconsulta() {
               ])
             } else if (parsed.type === 'signal') {
               handleIncomingSignal(msg.user, parsed.signalData)
+            } else if (parsed.type === 'screen_sharing_status') {
+              setRemoteIsScreenSharing(parsed.isSharing)
             }
           } catch {
             setMessages((prev) => [
@@ -273,31 +277,101 @@ export default function Teleconsulta() {
   // ----------------------------------------------------------------
   const shareScreen = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true })
+      const stream = await navigator.mediaDevices
+        .getDisplayMedia({ video: true, audio: true })
+        .catch(() => navigator.mediaDevices.getDisplayMedia({ video: true }))
+
       if (!mountedRef.current) return
+
       setLocalStream(stream)
       localStreamRef.current = stream
+      setIsScreenSharing(true)
 
-      stream.getVideoTracks()[0]?.addEventListener('ended', () => {
-        if (localStreamRef.current && mountedRef.current) {
-          navigator.mediaDevices
-            .getUserMedia({ video: true, audio: true })
-            .then((cam) => {
-              setLocalStream(cam)
-              localStreamRef.current = cam
-              const sender = pcRef.current?.getSenders().find((s) => s.track?.kind === 'video')
-              sender?.replaceTrack(cam.getVideoTracks()[0])
-            })
-            .catch(() => {})
+      const rc = roomCodeRef.current
+      if (rc && socketUser) {
+        sendSignalMessage(rc, {
+          type: 'screen_sharing_status',
+          isSharing: true,
+          userEmail: socketUser.email,
+        }, socketUser)
+      }
+
+      if (pcRef.current) {
+        const sender = pcRef.current.getSenders().find((s) => s.track?.kind === 'video')
+        if (sender) {
+          await sender.replaceTrack(stream.getVideoTracks()[0])
+        }
+      }
+
+      stream.getVideoTracks()[0]?.addEventListener('ended', async () => {
+        if (!mountedRef.current) return
+
+        setIsScreenSharing(false)
+
+        const rc2 = roomCodeRef.current
+        if (rc2 && socketUser) {
+          sendSignalMessage(rc2, {
+            type: 'screen_sharing_status',
+            isSharing: false,
+            userEmail: socketUser.email,
+          }, socketUser)
+        }
+
+        try {
+          const cam = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+          if (!mountedRef.current) return
+          setLocalStream(cam)
+          localStreamRef.current = cam
+
+          if (pcRef.current) {
+            const sender = pcRef.current.getSenders().find((s) => s.track?.kind === 'video')
+            if (sender) {
+              await sender.replaceTrack(cam.getVideoTracks()[0])
+            }
+          }
+        } catch {
+          // câmera não disponível após parar
         }
       })
-
-      const sender = pcRef.current?.getSenders().find((s) => s.track?.kind === 'video')
-      sender?.replaceTrack(stream.getVideoTracks()[0])
     } catch {
-      // user cancelled
+      // Usuário cancelou a seleção de tela
     }
   }, [])
+
+  const stopScreenShare = useCallback(async () => {
+    if (!isScreenSharing) return
+
+    if (localStreamRef.current) {
+      localStreamRef.current.getVideoTracks().forEach((t) => t.stop())
+    }
+
+    setIsScreenSharing(false)
+
+    const rc = roomCodeRef.current
+    if (rc && socketUser) {
+      sendSignalMessage(rc, {
+        type: 'screen_sharing_status',
+        isSharing: false,
+        userEmail: socketUser.email,
+      }, socketUser)
+    }
+
+    try {
+      const cam = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      if (!mountedRef.current) return
+      setLocalStream(cam)
+      localStreamRef.current = cam
+
+      if (pcRef.current) {
+        const sender = pcRef.current.getSenders().find((s) => s.track?.kind === 'video')
+        if (sender) {
+          await sender.replaceTrack(cam.getVideoTracks()[0])
+        }
+      }
+    } catch {
+      // câmera não disponível
+    }
+  }, [isScreenSharing])
 
   // ----------------------------------------------------------------
   // Hang up
@@ -403,13 +477,45 @@ export default function Teleconsulta() {
         {/* ---- Video section ---- */}
         <div className="video-section">
           <div className="video-grid">
-            <div className="video-container">
+            <div className="video-container" style={{ position: 'relative' }}>
               <video ref={localVideoRef} autoPlay muted playsInline />
-              <div className="video-label">Você</div>
+              <div className="video-label">
+                Você
+                {isScreenSharing && (
+                  <span
+                    style={{
+                      marginLeft: 6,
+                      fontSize: 11,
+                      background: '#D2640A',
+                      color: '#fff',
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                    }}
+                  >
+                    🖥️ Compartilhando
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="video-container">
+            <div className="video-container" style={{ position: 'relative' }}>
               <video ref={remoteVideoRef} autoPlay playsInline />
-              <div className="video-label">Paciente / Profissional</div>
+              <div className="video-label">
+                Paciente / Profissional
+                {remoteIsScreenSharing && (
+                  <span
+                    style={{
+                      marginLeft: 6,
+                      fontSize: 11,
+                      background: '#008080',
+                      color: '#fff',
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                    }}
+                  >
+                    🖥️ Tela
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -427,9 +533,27 @@ export default function Teleconsulta() {
                 Encerrar Chamada
               </button>
             )}
-            <button className="btn-ghost" onClick={shareScreen}>
-              Compartilhar Tela
-            </button>
+
+            {!isScreenSharing ? (
+              <button
+                className="btn-ghost"
+                onClick={shareScreen}
+                disabled={!callActive}
+                title={!callActive ? 'Inicie a chamada primeiro' : 'Compartilhar tela'}
+                style={{ opacity: !callActive ? 0.5 : 1 }}
+              >
+                🖥️ Compartilhar Tela
+              </button>
+            ) : (
+              <button
+                className="btn-ghost"
+                onClick={stopScreenShare}
+                style={{ color: '#ff8a80', borderColor: '#ff8a80' }}
+                title="Parar compartilhamento de tela"
+              >
+                ⏹ Parar Compartilhamento
+              </button>
+            )}
           </div>
         </div>
 

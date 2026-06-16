@@ -15,15 +15,40 @@ export default function Login() {
   const [crm, setCrm] = useState('')
   const [specialtyId, setSpecialtyId] = useState('')
   const [specialties, setSpecialties] = useState([])
+  const [consentTerms, setConsentTerms] = useState([])
+  const [acceptedConsents, setAcceptedConsents] = useState({})
 
   useEffect(() => {
     if (isRegister && role === 'professional') {
       fetch('/api/specialties')
-        .then(r => r.json())
-        .then(setSpecialties)
-        .catch(() => {})
+        .then(r => {
+          if (!r.ok) throw new Error('Falha ao carregar especialidades')
+          return r.json()
+        })
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setSpecialties(data)
+          }
+        })
+        .catch(() => {
+          setSpecialties([])
+        })
     }
   }, [isRegister, role])
+
+  useEffect(() => {
+    if (isRegister) {
+      fetch('/api/consents/active')
+        .then(r => r.json())
+        .then(terms => {
+          setConsentTerms(terms)
+          const initial = {}
+          terms.forEach(t => { initial[t.id] = false })
+          setAcceptedConsents(initial)
+        })
+        .catch(() => {})
+    }
+  }, [isRegister])
 
   function roleRedirect(userRole) {
     if (userRole === 'professional') return '/professional'
@@ -41,13 +66,20 @@ export default function Login() {
       return
     }
 
-    if (isRegister && role === 'professional') {
-      if (!crm || crm.length < 5) {
-        setLocalError('CRM deve ter no mínimo 5 caracteres')
-        return
+    if (isRegister) {
+      if (role === 'professional') {
+        if (!crm || crm.length < 5) {
+          setLocalError('Registro profissional deve ter no mínimo 5 caracteres')
+          return
+        }
+        if (!specialtyId) {
+          setLocalError('Selecione uma especialidade')
+          return
+        }
       }
-      if (!specialtyId) {
-        setLocalError('Selecione uma especialidade')
+      const allAccepted = Object.values(acceptedConsents).every(Boolean)
+      if (!allAccepted) {
+        setLocalError('Você precisa aceitar todos os termos de consentimento')
         return
       }
     }
@@ -55,7 +87,11 @@ export default function Login() {
     try {
       let user
       if (isRegister) {
-        user = await register(email, password, role)
+        const consents = Object.entries(acceptedConsents).map(([id, accepted]) => ({
+          consentTermId: Number(id),
+          accepted,
+        }))
+        user = await register(email, password, role, consents)
         // Create professional profile after registration
         if (user?.role === 'professional') {
           try {
@@ -130,25 +166,60 @@ export default function Login() {
             {role === 'professional' && (
               <>
                 <div className="form-group">
-                  <label>CRM</label>
+                  <label>Registro profissional</label>
                   <input
                     type="text"
                     value={crm}
                     onChange={(e) => setCrm(e.target.value)}
-                    placeholder="Nº do conselho regional"
+                    placeholder="Ex: CRP 06/12345, CRM-SP 123456, CFP 12345"
                     minLength={5}
                   />
                 </div>
                 <div className="form-group">
                   <label>Especialidade</label>
                   <select value={specialtyId} onChange={(e) => setSpecialtyId(e.target.value)}>
-                    <option value="">Selecione...</option>
-                    {specialties.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
+                    <option value="">Selecione sua especialidade...</option>
+                    {specialties.length > 0 ? (
+                      specialties.map((s) => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="1">Psicologia Clínica</option>
+                        <option value="2">Psiquiatria</option>
+                        <option value="3">Psicanálise</option>
+                        <option value="4">Terapia Cognitivo-Comportamental (TCC)</option>
+                        <option value="5">Neuropsicologia</option>
+                        <option value="6">Psicopedagogia</option>
+                        <option value="7">Terapia Ocupacional em Saúde Mental</option>
+                        <option value="8">Outra</option>
+                      </>
+                    )}
                   </select>
+                  {specialties.length === 0 && (
+                    <small style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 4, display: 'block' }}>
+                      Especialidades carregadas localmente. Conecte o servidor para mais opções.
+                    </small>
+                  )}
                 </div>
               </>
+            )}
+
+            {consentTerms.length > 0 && (
+              <div style={{ marginTop: 12 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Termos de Consentimento</p>
+                {consentTerms.map(term => (
+                  <label key={term.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 6, fontSize: 12 }}>
+                    <input
+                      type="checkbox"
+                      checked={!!acceptedConsents[term.id]}
+                      onChange={(e) => setAcceptedConsents(prev => ({ ...prev, [term.id]: e.target.checked }))}
+                      style={{ marginTop: 2 }}
+                    />
+                    <span>{term.description || term.title}</span>
+                  </label>
+                ))}
+              </div>
             )}
           </>
         )}

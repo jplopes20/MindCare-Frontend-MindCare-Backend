@@ -17,6 +17,7 @@ import {
   reports,
 } from '../../db/schema/index.js'
 import { AppError } from '../../shared/errors.js'
+import { encrypt, decrypt, encryptFields, decryptFields, hashField } from '../../shared/crypto.js'
 import {
   cacheAvailableSlots,
   getAvailableSlotsFromCache,
@@ -63,33 +64,34 @@ function isPgUniqueViolation(err: unknown, constraintName?: string): boolean {
 // ============================================================================
 
 export async function createPatient(userId: number, data: CreatePatient) {
-  // 1. Verifica se já existe um paciente para este userId (auto-criado no registro)
   const existing = await getPatientByUserId(userId)
 
   if (existing) {
-    // 2. Se existe, atualiza os campos fornecidos
     return updatePatient(existing.id, data)
   }
 
-  // 3. Se não existe, tenta criar novo
+  const encrypted = encryptFields(data, ['cpf', 'phone', 'address'])
+  const cpfHashVal = data.cpf ? hashField(data.cpf) : null
+
   try {
     const [patient] = await db
       .insert(patients)
       .values({
         userId,
         name: data.name,
-        cpf: data.cpf,
+        cpf: encrypted.cpf as string | null | undefined,
+        cpfHash: cpfHashVal,
         dateOfBirth: data.dateOfBirth
           ? new Date(data.dateOfBirth)
           : undefined,
-        phone: data.phone,
-        address: data.address,
+        phone: encrypted.phone as string | null | undefined,
+        address: encrypted.address as string | null | undefined,
       })
       .returning()
 
-    return patient
+    return decryptFields(patient, ['cpf', 'phone', 'address'])
   } catch (err: unknown) {
-    if (isPgUniqueViolation(err, 'patients_cpf_key')) {
+    if (isPgUniqueViolation(err, 'patients_cpf_hash_key')) {
       throw new AppError(409, 'CPF já cadastrado para outro paciente')
     }
     throw err
@@ -102,7 +104,7 @@ export async function getPatientByUserId(userId: number) {
     .from(patients)
     .where(eq(patients.userId, userId))
 
-  return patient
+  return patient ? decryptFields(patient, ['cpf', 'phone', 'address']) : patient
 }
 
 export async function getPatientById(patientId: number) {
@@ -111,16 +113,19 @@ export async function getPatientById(patientId: number) {
     .from(patients)
     .where(eq(patients.id, patientId))
 
-  return patient
+  return patient ? decryptFields(patient, ['cpf', 'phone', 'address']) : patient
 }
 
 export async function updatePatient(patientId: number, data: UpdatePatient) {
   const updateData: Record<string, unknown> = {}
   if (data.name !== undefined) updateData.name = data.name
-  if (data.cpf !== undefined) updateData.cpf = data.cpf
+  if (data.cpf !== undefined) {
+    updateData.cpf = encrypt(data.cpf)
+    updateData.cpfHash = hashField(data.cpf)
+  }
   if (data.dateOfBirth !== undefined) updateData.dateOfBirth = new Date(data.dateOfBirth)
-  if (data.phone !== undefined) updateData.phone = data.phone
-  if (data.address !== undefined) updateData.address = data.address
+  if (data.phone !== undefined) updateData.phone = encrypt(data.phone)
+  if (data.address !== undefined) updateData.address = encrypt(data.address)
   updateData.updatedAt = new Date()
 
   try {
@@ -130,9 +135,9 @@ export async function updatePatient(patientId: number, data: UpdatePatient) {
       .where(eq(patients.id, patientId))
       .returning()
 
-    return patient
+    return patient ? decryptFields(patient, ['cpf', 'phone', 'address']) : patient
   } catch (err: unknown) {
-    if (isPgUniqueViolation(err, 'patients_cpf_key')) {
+    if (isPgUniqueViolation(err, 'patients_cpf_hash_key')) {
       throw new AppError(409, 'CPF já cadastrado para outro paciente')
     }
     throw err
@@ -736,27 +741,27 @@ export async function createMedicalRecord(
       appointmentId,
       patientId,
       professionalId,
-      recordText,
+      recordText: encrypt(recordText) ?? recordText,
     })
     .returning()
 
-  return record
+  return { ...record, recordText: decrypt(record.recordText) ?? record.recordText }
 }
 
 export async function getMedicalRecordById(recordId: number) {
-  return db.query.medicalRecords.findFirst({
+  const record = await db.query.medicalRecords.findFirst({
     where: eq(medicalRecords.id, recordId),
     with: {
       diagnoses: true,
       prescriptions: true,
     },
   })
+  return record ? { ...record, recordText: decrypt(record.recordText) ?? record.recordText } : record
 }
 
 export async function getMedicalRecordWithEnrichedData(
   recordId: number,
 ) {
-  // Fetch record and related data separately due to Drizzle type limitations
   const record = await db.query.medicalRecords.findFirst({
     where: eq(medicalRecords.id, recordId),
     with: {
@@ -782,7 +787,7 @@ export async function getMedicalRecordWithEnrichedData(
       .select()
       .from(users)
       .where(eq(users.id, patientRow.userId))
-    patientWithUser = { ...patientRow, user: u }
+    patientWithUser = { ...decryptFields(patientRow, ['cpf', 'phone', 'address']), user: u }
   }
 
   let professionalWithSpecialty = null
@@ -800,13 +805,14 @@ export async function getMedicalRecordWithEnrichedData(
 
   return {
     ...record,
+    recordText: decrypt(record.recordText) ?? record.recordText,
     patient: patientWithUser,
     professional: professionalWithSpecialty,
   }
 }
 
 export async function getMedicalRecordsByPatient(patientId: number) {
-  return db.query.medicalRecords.findMany({
+  const records = await db.query.medicalRecords.findMany({
     where: eq(medicalRecords.patientId, patientId),
     with: {
       diagnoses: true,
@@ -820,6 +826,10 @@ export async function getMedicalRecordsByPatient(patientId: number) {
     },
     orderBy: medicalRecords.recordDateTime,
   })
+  return records.map((r) => ({
+    ...r,
+    recordText: decrypt(r.recordText) ?? r.recordText,
+  }))
 }
 
 export async function addDiagnosis(
@@ -1011,24 +1021,32 @@ export async function getLinkedPatientsByProfessional(
 export async function getAllPatients(searchTerm?: string) {
   if (searchTerm) {
     const pattern = `%${searchTerm}%`
+    const cpfHashVal = hashField(searchTerm)
     const rows = await db
       .select()
       .from(patients)
       .innerJoin(users, eq(patients.userId, users.id))
       .where(
-        or(ilike(patients.name, pattern), ilike(patients.cpf, pattern)),
+        or(
+          ilike(patients.name, pattern),
+          cpfHashVal ? eq(patients.cpfHash, cpfHashVal) : undefined,
+        ),
       )
 
     return rows.map((r) => ({
-      ...r.patients,
+      ...decryptFields(r.patients, ['cpf', 'phone', 'address']),
       user: r.users,
     }))
   }
 
-  return db.query.patients.findMany({
+  const rows = await db.query.patients.findMany({
     with: { user: true },
     orderBy: (pts, { asc }) => [asc(pts.name)],
   })
+  return rows.map((r) => ({
+    ...decryptFields(r, ['cpf', 'phone', 'address']),
+    user: r.user,
+  }))
 }
 
 export async function linkPatient(

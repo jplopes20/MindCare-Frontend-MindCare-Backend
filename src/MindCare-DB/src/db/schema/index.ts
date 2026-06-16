@@ -1,4 +1,16 @@
 export { userRoleEnum, users } from './users.js'
+export {
+  deletionStatusEnum, deletionTypeEnum,
+  dataDeletionRequests, dataDeletionRequestsRelations,
+  auditLogs,
+} from './lgpd.js'
+export {
+  consentTermTypeEnum,
+  consentTerms,
+  consentTermsRelations,
+  userConsents,
+  userConsentsRelations,
+} from './consent.js'
 export { aiActionTypeEnum, aiLogs, aiLogsRelations } from './domain.js'
 export {
   patients,

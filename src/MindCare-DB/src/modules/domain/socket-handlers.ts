@@ -14,6 +14,8 @@ import { eq } from 'drizzle-orm'
  * - room_status_changed: Status da sala muda (waiting -> active -> closed)
  * - join_mood_room: Usuário entra na sala de mood para receber atualizações
  * - mood_entry_created: Nova emoção registrada (broadcast para a sala do paciente)
+ * - send_message / receive_message: usado também para sinalização WebRTC (type: 'signal')
+ *   e para notificações de estado de tela compartilhada (type: 'screen_sharing_status')
  */
 
 interface SocketUser {

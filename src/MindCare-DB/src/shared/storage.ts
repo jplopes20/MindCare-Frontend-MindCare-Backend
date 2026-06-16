@@ -5,9 +5,11 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { randomUUID } from 'node:crypto'
+import { randomUUID, createCipheriv, createDecipheriv, createHash } from 'node:crypto'
+import { createReadStream, createWriteStream } from 'node:fs'
 import { writeFile, mkdir, unlink } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
+import { pipeline } from 'node:stream/promises'
 
 export interface FileUpload {
   buffer: Buffer
@@ -52,6 +54,7 @@ class S3StorageProvider implements StorageProvider {
         Key: key,
         Body: file.buffer,
         ContentType: file.mimetype,
+        ServerSideEncryption: 'AES256',
       }),
     )
     return { key, url: key }
@@ -74,16 +77,33 @@ class S3StorageProvider implements StorageProvider {
 
 class LocalStorageProvider implements StorageProvider {
   private basePath: string
+  private encKey: Buffer
 
   constructor() {
     this.basePath = process.env.LOCAL_STORAGE_PATH ?? join(process.cwd(), 'uploads')
+    const raw = process.env.ENCRYPTION_KEY ?? ''
+    this.encKey = createHash('sha256').update(raw).digest()
+  }
+
+  private encryptBuffer(buf: Buffer): Buffer {
+    const iv = createHash('md5').update(randomUUID()).digest()
+    const cipher = createCipheriv('aes-256-cbc', this.encKey, iv)
+    return Buffer.concat([iv, cipher.update(buf), cipher.final()])
+  }
+
+  private decryptBuffer(buf: Buffer): Buffer {
+    const iv = buf.subarray(0, 16)
+    const data = buf.subarray(16)
+    const decipher = createDecipheriv('aes-256-cbc', this.encKey, iv)
+    return Buffer.concat([decipher.update(data), decipher.final()])
   }
 
   async upload(file: FileUpload, folder = 'documents') {
     const key = `${folder}/${randomUUID()}-${file.originalName}`
     const fullPath = join(this.basePath, key)
     await mkdir(dirname(fullPath), { recursive: true })
-    await writeFile(fullPath, file.buffer)
+    const encrypted = this.encryptBuffer(file.buffer)
+    await writeFile(fullPath, encrypted)
     return { key, url: key }
   }
 

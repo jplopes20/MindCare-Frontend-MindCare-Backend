@@ -10,7 +10,7 @@ export const createPatientSchema = z.object({
   dateOfBirth: z.string().datetime().optional(),
   phone: z.string().max(20).optional(),
   address: z.string().optional(),
-})
+}).strict()
 
 export const updatePatientSchema = createPatientSchema.partial()
 
@@ -23,7 +23,7 @@ export const createHealthProfessionalSchema = z.object({
   specialtyId: z.number().int().positive(),
   licenseExpiry: z.string().datetime().optional(),
   bio: z.string().optional(),
-})
+}).strict()
 
 export const updateHealthProfessionalSchema =
   createHealthProfessionalSchema.partial()
@@ -35,7 +35,7 @@ export const updateHealthProfessionalSchema =
 export const createSpecialtySchema = z.object({
   name: z.string().min(3).max(100),
   description: z.string().optional(),
-})
+}).strict()
 
 export const updateSpecialtySchema = createSpecialtySchema.partial()
 
@@ -54,7 +54,7 @@ export const createWorkingHoursSchema = z.object({
     .regex(/^\d{2}:\d{2}$/, 'Formato: HH:MM')
     .describe('Hora de término'),
   isActive: z.boolean().optional().default(true),
-})
+}).strict()
 
 export const updateWorkingHoursSchema = createWorkingHoursSchema.partial()
 
@@ -66,29 +66,29 @@ export const createAppointmentSchema = z.object({
   professionalId: z.number().int().positive(),
   scheduledStartTime: z.string().datetime(),
   scheduledEndTime: z.string().datetime(),
-})
+}).strict()
 
 export const cancelAppointmentSchema = z.object({
   cancellationReason: z.string().min(5).max(500),
-})
+}).strict()
 
 export const rescheduleAppointmentSchema = z.object({
   scheduledStartTime: z.string().datetime(),
   scheduledEndTime: z.string().datetime(),
   message: z.string().optional(),
-})
+}).strict()
 
 export const confirmAppointmentSchema = z.object({
   appointmentId: z.number().int().positive(),
-})
+}).strict()
 
 export const sendAppointmentMessageSchema = z.object({
   message: z.string().min(1).max(1000),
-})
+}).strict()
 
 export const rejectRescheduleSchema = z.object({
   message: z.string().optional(),
-})
+}).strict()
 
 // ============================================================================
 // MEDICAL_RECORDS
@@ -98,19 +98,19 @@ export const createMedicalRecordSchema = z.object({
   appointmentId: z.number().int().positive().optional(),
   patientId: z.number().int().positive(),
   recordText: z.string().min(10),
-})
+}).strict()
 
 export const createDiagnosisSchema = z.object({
   cidCode: z.string().max(10).optional(),
   description: z.string().min(5),
-})
+}).strict()
 
 export const createPrescriptionSchema = z.object({
   medication: z.string().min(2).max(255),
   dosage: z.string().min(2).max(100),
   instructions: z.string().min(5),
   validity: z.string().datetime().optional(),
-})
+}).strict()
 
 // ============================================================================
 // TELEMEDICINE
@@ -118,11 +118,11 @@ export const createPrescriptionSchema = z.object({
 
 export const createTelemedicineRoomSchema = z.object({
   appointmentId: z.number().int().positive(),
-})
+}).strict()
 
 export const sendMessageSchema = z.object({
   content: z.string().min(1).max(5000),
-})
+}).strict()
 
 export type CreatePatient = z.infer<typeof createPatientSchema>
 export type UpdatePatient = z.infer<typeof updatePatientSchema>
@@ -149,7 +149,7 @@ export const createEmotionLogSchema = z.object({
   moodValue: z.number().int().min(1).max(5),
   moodLabel: z.string().min(2).max(50).optional(),
   note: z.string().optional(),
-})
+}).strict()
 
 export type CreateEmotionLog = z.infer<typeof createEmotionLogSchema>
 
@@ -173,18 +173,18 @@ export const createDocumentSchema = z.object({
   patientId: z.number().int().positive().optional(),
   medicalRecordId: z.number().int().positive().optional(),
   appointmentId: z.number().int().positive().optional(),
-})
+}).strict()
 
 export const updateDocumentSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   description: z.string().optional(),
   documentType: z.enum(documentTypeValues).optional(),
   expiresAt: z.string().datetime().optional(),
-})
+}).strict()
 
 export const archiveDocumentSchema = z.object({
   isArchived: z.boolean(),
-})
+}).strict()
 
 export const uploadFromUrlSchema = z.object({
   url: z.string().url('URL inválida'),
@@ -192,7 +192,7 @@ export const uploadFromUrlSchema = z.object({
   description: z.string().optional(),
   documentType: z.enum(documentTypeValues).default('other'),
   patientId: z.number().int().positive().optional(),
-})
+}).strict()
 
 export const uploadFromDriveSchema = z.object({
   googleFileId: z.string().min(1),
@@ -202,7 +202,7 @@ export const uploadFromDriveSchema = z.object({
   description: z.string().optional(),
   documentType: z.enum(documentTypeValues).default('other'),
   patientId: z.number().int().positive().optional(),
-})
+}).strict()
 
 export type CreateDocument = z.infer<typeof createDocumentSchema>
 export type UpdateDocument = z.infer<typeof updateDocumentSchema>
@@ -216,16 +216,16 @@ export const aiDraftSchema = z.object({
   specialty: z.string().optional(),
   symptoms: z.string().optional(),
   notes: z.string().optional(),
-})
+}).strict()
 
 export const aiImproveSchema = z.object({
   currentText: z.string().min(1),
   instruction: z.string().optional(),
-})
+}).strict()
 
 export const aiDiagnosisSchema = z.object({
   clinicalText: z.string().min(10),
-})
+}).strict()
 
 export type AiDraft = z.infer<typeof aiDraftSchema>
 export type AiImprove = z.infer<typeof aiImproveSchema>
@@ -240,13 +240,13 @@ export const createReportSchema = z.object({
   periodStart: z.string().datetime().optional(),
   periodEnd: z.string().datetime().optional(),
   observations: z.string().optional(),
-})
+}).strict()
 
 export const updateReportSchema = createReportSchema.partial()
 
 export const linkPatientSchema = z.object({
   patientId: z.number().int().positive(),
-})
+}).strict()
 
 export type CreateReport = z.infer<typeof createReportSchema>
 export type UpdateReport = z.infer<typeof updateReportSchema>

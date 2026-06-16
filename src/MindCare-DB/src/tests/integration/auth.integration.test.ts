@@ -7,6 +7,7 @@ let authToken: string
 
 const testEmail = `test-auth-${Date.now()}@mindcare.test`
 const testPassword = 'senha1234'
+const testConsents = [{ consentTermId: 1, accepted: true }, { consentTermId: 2, accepted: true }]
 
 beforeAll(async () => {
   const mod = await import('../../app.js')
@@ -17,7 +18,7 @@ describe('POST /auth/register', () => {
   it('deve registrar com dados válidos → 201', async () => {
     const res = await request(app)
       .post('/auth/register')
-      .send({ email: testEmail, password: testPassword, role: 'patient' })
+      .send({ email: testEmail, password: testPassword, role: 'patient', consents: testConsents })
 
     expect(res.status).toBe(201)
     expect(res.body).toHaveProperty('user')
@@ -29,7 +30,7 @@ describe('POST /auth/register', () => {
   it('deve rejeitar email duplicado → 409', async () => {
     const res = await request(app)
       .post('/auth/register')
-      .send({ email: testEmail, password: testPassword, role: 'patient' })
+      .send({ email: testEmail, password: testPassword, role: 'patient', consents: testConsents })
 
     expect(res.status).toBe(409)
   })

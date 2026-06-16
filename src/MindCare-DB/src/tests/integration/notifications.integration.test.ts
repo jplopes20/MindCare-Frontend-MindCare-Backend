@@ -7,6 +7,7 @@ let authToken: string
 
 const testEmail = `test-notif-${Date.now()}@mindcare.test`
 const testPassword = 'senha1234'
+const testConsents = [{ consentTermId: 1, accepted: true }, { consentTermId: 2, accepted: true }]
 
 beforeAll(async () => {
   const mod = await import('../../app.js')
@@ -14,7 +15,7 @@ beforeAll(async () => {
 
   const res = await request(app)
     .post('/auth/register')
-    .send({ email: testEmail, password: testPassword, role: 'patient' })
+    .send({ email: testEmail, password: testPassword, role: 'patient', consents: testConsents })
 
   const loginRes = await request(app)
     .post('/auth/login')

@@ -1,7 +1,7 @@
 import { inArray } from 'drizzle-orm'
 import bcrypt from 'bcrypt'
 import { db } from './index.js'
-import { users, specialties, healthProfessionals, patients, workingHours, appointments, professionalPatients, emotionLogs, medicalRecords, diagnoses, prescriptions, documents, notifications } from './schema/index.js'
+import { users, specialties, healthProfessionals, patients, workingHours, appointments, professionalPatients, emotionLogs, medicalRecords, diagnoses, prescriptions, documents, notifications, consentTerms } from './schema/index.js'
 
 function makeDate(daysOffset: number, hour: number, minute = 0) {
   const d = new Date()
@@ -204,6 +204,15 @@ export async function seedIfEmpty() {
       { userId: findUser('joao.pedro@email.com').id, type: 'prescription_ready' as const, title: 'Prescrição disponível', message: 'A prescrição de Sertralina 50mg está disponível para retirada.' },
       { userId: findUser('lucia.santos@email.com').id, type: 'message' as const, title: 'Mensagem da Dra. Camila', message: 'A Dra. Camila Santos enviou uma mensagem sobre seu tratamento.' },
     ])
+
+    const existingConsentTerms = await db.select({ id: consentTerms.id }).from(consentTerms).limit(1)
+    if (existingConsentTerms.length === 0) {
+      await db.insert(consentTerms).values([
+        { title: 'Política de Privacidade', description: 'Autorizo o tratamento dos meus dados pessoais conforme a Política de Privacidade da MindCare.', type: 'privacy_policy', version: '1.0.0' },
+        { title: 'Termos de Uso', description: 'Declaro que li e concordo com os Termos de Uso da plataforma MindCare.', type: 'terms_of_use', version: '1.0.0' },
+      ])
+      console.log('[seed] Termos de consentimento inseridos')
+    }
 
     console.log('[seed] Banco populado com sucesso!')
   } catch (err) {

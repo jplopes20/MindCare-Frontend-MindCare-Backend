@@ -58,10 +58,10 @@ function useAuthProvider() {
     }
   }, [])
 
-  const register = useCallback(async (email, password, role) => {
+  const register = useCallback(async (email, password, role, consents) => {
     setError(null)
     try {
-      const u = await authService.register(email, password, role)
+      const u = await authService.register(email, password, role, consents)
       setUser(u)
       return u
     } catch (err) {

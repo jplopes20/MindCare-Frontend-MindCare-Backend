@@ -1,0 +1,1000 @@
+DOCUMENTA��O DE REQUISITOS DO SISTEMA
+MINDCARE
+Sistema de Gerenciamento de Cl�nica de Sa�de Mental
+Escopo MVP - Apresenta��o de Trabalho de Conclus�o de Curso
+Vers�o
+2.0 - MVP (2 meses)
+Data
+Maio de 2025
+Autores
+[Nome do Aluno]
+Orientador
+[Nome do Orientador]
+Institui��o
+[Nome da Institui��o]
+Curso
+[Nome do Curso]
+Status
+Aprovado para Desenvolvimento
+Apresenta��o
+Junho de 2025
+Metodologia
+Scrum - 8 sprints de 1 semana
+Goi�nia - GO
+2025
+RESUMO EXECUTIVO
+O MindCare � um sistema web integrado de gerenciamento de cl�nica de sa�de mental. Este documento apresenta a vers�o MVP (Minimum Viable Product) do projeto, adaptada para desenvolvimento e apresenta��o em 2 meses como Trabalho de Conclus�o de Curso, com entrega prevista para junho de 2025.
+O escopo foi revisado para garantir viabilidade de implementa��o por 1 a 2 desenvolvedores, mantendo as funcionalidades de maior valor cl�nico e demonstrando dom�nio t�cnico das principais tecnologias: React 18, Node.js/Express, PostgreSQL, Redis e WebRTC. Funcionalidades de IA assistiva (rascunho de prontu�rio, sugest�o de diagn�sticos, melhoria de texto) foram implementadas no MVP em modo simulado, com arquitetura preparada para integra��o com LLMs reais.
+Crit�rio
+Vers�o Original
+Vers�o MVP (TCC)
+Prazo de desenvolvimento
+20 semanas
+8 semanas
+Requisitos funcionais
+45 RF
+20 RF priorizados
+Teleconsulta
+Twilio/Agora (pago)
+WebRTC nativo (gratuito)
+IA de diagn�stico
+OpenAI + Claude
+Vers�o futura (Se��o 9)
+Deploy
+AWS (produ��o)
+Railway / Render (free tier)
+Mobile nativo
+Planejado
+Fora do escopo
+Faturamento/planos sa�de
+Exclu�do
+Exclu�do
+Cobertura de testes
+80%
+60% (unit�rios + integra��o)
+1 INTRODU��O
+1.1 Tema
+O MindCare � um sistema web de gerenciamento de cl�nica de sa�de mental que centraliza prontu�rio eletr�nico, agendamento de consultas, teleconsulta e gest�o administrativa. A vers�o MVP foca nas funcionalidades essenciais para demonstra��o acad�mica e valida��o do conceito.
+1.2 Objetivo do Projeto
+Objetivo Geral: Desenvolver uma plataforma web funcional que demonstre a gest�o integrada de cl�nicas de sa�de mental, com foco em prontu�rio eletr�nico, agendamento inteligente e teleconsulta, utilizando stack moderna e arquitetura escal�vel.
+Objetivos Espec�ficos:
+� Implementar sistema de prontu�rio eletr�nico (EHR) com diagn�sticos ICD-10;
+� Desenvolver agendamento com calend�rio interativo e notifica��es por e-mail;
+� Criar m�dulo de teleconsulta com WebRTC nativo (sem depend�ncias pagas);
+� Aplicar controle de acesso RBAC (paciente, profissional, admin);
+� Garantir seguran�a com JWT, criptografia e conformidade LGPD;
+� Realizar deploy p�blico acess�vel para apresenta��o da banca.
+Nota: Funcionalidades de IA assistiva foram implementadas no MVP em modo simulado (detalhadas na Se��o 9).
+1.3 Justificativa
+O Brasil tem d�ficit de 76.000 psic�logos e 21.000 psiquiatras (CFM, 2023). Sistemas integrados de sa�de mental reduzem tempo administrativo em at� 40% e aumentam ades�o ao tratamento. O MindCare aborda esse problema com tecnologia acess�vel e open-source.
+1.4 Delimita��o do Escopo MVP
+Categoria
+Inclu�do no MVP
+Fora do MVP
+Funcionalidades
+Cadastro, agendamento, prontu�rio, teleconsulta, das
+hboard
+Usu�rios
+Paciente, Profissional, Admin
+Suporte t�cnico externo, seguradoras
+Plataformas
+Web responsiva (desktop, tablet, mobile)
+App nativo iOS/Android
+Deploy
+Railway/Render (free tier)
+AWS/GCP (produ��o enterprise)
+Teleconsulta
+WebRTC nativo no browser
+Twilio/Agora SDK (custo)
+IA
+Inclu�do no MVP (modo simulado)
+Rascunho de prontu�rio, sugest�o CID-10, melhoria de texto
+IA (vers�o futura), farm�cia, app mobile
+1.5 Defini��es e Siglas
+Sigla
+Significado
+EHR
+Electronic Health Record (Prontu�rio Eletr�nico)
+ICD-10
+International Classification of Diseases, 10� edi��o
+RBAC
+Role-Based Access Control (Controle de Acesso Baseado em Pap�is)
+JWT
+JSON Web Token (Autentica��o sem estado)
+Sigla
+Significado
+WebRTC
+Web Real-Time Communication (Videochamada nativa no browser)
+MVP
+Minimum Viable Product (Produto M�nimo Vi�vel)
+API
+Application Programming Interface
+LGPD
+Lei Geral de Prote��o de Dados Pessoais (Lei 13.709/2018)
+TCC
+Trabalho de Conclus�o de Curso
+S3
+Simple Storage Service (Armazenamento de arquivos em nuvem)
+ORM
+Object-Relational Mapping (Mapeamento objeto-relacional)
+IA
+Intelig�ncia Artificial (implementada no MVP em modo simulado)
+1.6 M�todo de Trabalho
+O desenvolvimento segue Scrum adaptado com sprints semanais, adequado ao prazo de 8 semanas de 1 a 2 desenvolvedores:
+Cerim�nia
+Frequ�ncia
+Dura��o
+Sprint Planning
+In�cio de cada semana
+1 hora
+Daily Standup
+Di�ria
+10 minutos
+Sprint Review
+Final de cada semana
+30 minutos
+Code Review
+Por pull request
+Cont�nuo
+Deploy de Review
+A cada sprint
+Autom�tico (CI/CD)
+2 DESCRI��O GERAL DO SISTEMA
+2.1 Descri��o do Problema
+Cl�nicas de sa�de mental enfrentam desafios que comprometem a qualidade do atendimento e a efici�ncia operacional:
+Desafio
+Impacto
+Solu��o MindCare
+Registros em papel/planilhas
+Perda de dados, baixa legibilidade
+Prontu�rio eletr�nico estruturado
+Agendamento por telefone
+Inefici�ncia, faltas frequentes
+Calend�rio online + notifica��es
+Sem atendimento remoto
+Exclus�o geogr�fica de pacientes
+Teleconsulta WebRTC integrada
+Diagn�sticos inconsistentes
+Falta de padroniza��o cl�nica
+Valida��o ICD-10 (sugest�o IA na v2)
+Dados sens�veis vulner�veis
+Risco de vazamento de dados
+JWT + AES-256 + RBAC + LGPD
+2.2 Escopo do MVP
+Os m�dulos implementados no MVP s�o:
+M�dulo
+Funcionalidades do MVP
+Prioridade
+Autentica��o
+Registro, login JWT, recupera��o de senha, RBAC
+Alta
+Pacientes
+Cadastro completo, hist�rico m�dico, upload de documentos, Registro de humor/emo��es
+Alta
+Profissionais
+Cadastro com CRP/CRM, hor�rios, perfil p�blico
+Alta
+Agendamento
+Calend�rio, disponibilidade, cancelamento, notifica��es em banco de dados e e-mail, mensagens de negocia��o entre paciente e profissional
+Alta
+Prontu�rio (EHR)
+Anamnese, diagn�stico ICD-10, prescri��o, gerar PDF
+Alta
+Teleconsulta
+V�deo/�udio WebRTC, chat em tempo real, sala por token, compartilhamento de tela
+Alta
+Dashboard Admin
+M�tricas, listagem de usu�rios, relat�rios b�sicos, Relat�rios profissionais
+M�dia
+IA (Claude API)
+Gera��o de rascunho de prontu�rio, sugest�o de diagn�sticos CID-10, melhoria de texto cl�nico
+M�dia
+2.3 Atores do Sistema
+Ator
+Responsabilidades no MVP
+Paciente
+Criar conta, agendar/cancelar consultas, visualizar prontu�rio, participar de teleconsulta, fazer upload de exames
+Profissional de Sa�de
+Gerenciar agenda, criar/editar prontu�rios, registrar diagn�sticos e prescri��es, conduzir teleconsulta
+Administrador
+Gerenciar usu�rios, visualizar dashboard de m�tricas, gerenciar especialidades do sistema
+2.4 Premissas
+� Conex�o de internet de no m�nimo 2 Mbps para teleconsulta com qualidade adequada;
+� Navegadores modernos com suporte a WebRTC: Chrome 90+, Firefox 88+, Edge 90+,
+Safari 15+;
+� Profissionais possuem registro ativo no CRP (psic�logos) ou CRM (psiquiatras);
+� Pacientes s�o maiores de 18 anos ou possuem respons�vel legal cadastrado;
+� Dados armazenados em conformidade com a LGPD (Lei 13.709/2018);
+� Backup autom�tico di�rio dos dados do banco de dados;
+� Deploy em servidor com uptime m�nimo de 99% (garantido pelas plataformasRailway/Render).
+2.5 Regras de Neg�cio
+C�digo
+Regra
+Descri��o
+RN001
+Agendamento
+Paciente s� pode agendar em hor�rios dispon�veis de profissionais ativos
+RN002
+Prontu�rio
+Apenas o profissional respons�vel pela consulta pode criar/editar o prontu�rio
+RN003
+Teleconsulta
+Sala WebRTC criada automaticamente; v�lida por 24h ap�s hor�rio agendado
+RN004
+Notifica��es
+E-mails autom�ticos: confirma��o, lembrete 24h e lembrete 1h antes
+RN005
+Cancelamento
+Paciente pode cancelar at� 24h antes; profissional pode cancelar a qualquer momento
+RN006
+Documentos
+M�ximo 20 MB por arquivo; formatos aceitos: PDF, DOC, DOCX, TXT, JPEG, PNG, WebP; upload por dispositivo, URL externa ou Google Drive
+RN007
+Acesso
+Paciente acessa apenas seus pr�prios dados (prontu�rios, agendamentos, documentos)
+RN008
+ICD-10
+C�digo de diagn�stico deve ser validado contra tabela ICD-10 oficial da OMS
+RN009
+Prescri��o
+Medicamento prescrito deve ter dosagem, frequ�ncia e dura��o obrigat�rios
+RN010
+Compartilhamento de Tela
+O compartilhamento de tela s� pode ser iniciado ap�s a chamada de v�deo estar ativa. Ao encerrar o compartilhamento (pelo bot�o do MindCare ou pelo bot�o nativo do browser), o sistema retorna automaticamente para a c�mera. O compartilhamento de �udio do sistema � tentado automaticamente (suportado em Chrome e Edge).
+
+
+3 REQUISITOS DO SISTEMA
+3.1 Requisitos Funcionais
+RF000 - Health Check: O sistema exp�e endpoint GET /health que retorna status 200 com informa��es de vers�o, uptime e conectividade com banco e Redis.
+3.1.1 Gest�o de Usu�rios (RF001-RF005)
+RF001 - Registro de Usu�rio: O sistema deve permitir que novos usu�rios se registrem informando nome, e-mail, senha, telefone e papel (paciente ou profissional). Administradores s�o criados apenas pelo sistema.
+RF002 - Autentica��o JWT: O sistema deve autenticar usu�rios via e-mail/senha, gerando tokens JWT com expira��o de 24 horas para sess�es seguras.
+RF003 - Recupera��o de Senha: [N�o implementado no MVP] O sistema deve enviar e-mail com link de redefini��o de senha com validade de 1 hora, utilizando token de uso �nico.
+RF004 - Perfil do Usu�rio: Usu�rios devem poder visualizar e editar seu perfil: foto, bio, telefone e prefer�ncias de notifica��o.
+RF005 - Controle de Acesso RBAC: O sistema deve aplicar permiss�es baseadas em papel: paciente acessa apenas seus dados; profissional acessa seus pacientes; admin acessa tudo.
+3.1.2 Gest�o de Pacientes (RF006-RF008)
+RF006 - Cadastro de Paciente: Sistema deve capturar: CPF, data de nascimento, endere�o, contato de emerg�ncia, alergias e medica��es em uso.
+RF007 - Upload de Documentos: Pacientes podem fazer upload de exames e laudos (PDF, DOC, DOCX, TXT, JPEG, PNG, WebP, m�x. 20 MB) a partir do dispositivo, URL externa ou Google Drive, armazenados de forma criptografada no storage.
+RF008 - Visualiza��o de Hist�rico: Paciente deve acessar todos seus prontu�rios com filtros por data e por profissional.
+3.1.3 Gest�o de Profissionais (RF009-RF011)
+RF009 - Cadastro de Profissional: Sistema deve capturar: CRP/CRM, especialidade, bio, foto de perfil e valor da consulta.
+RF010 - Configura��o de Hor�rios: Profissional define hor�rios de atendimento por dia da semana, com intervalos de 30 ou 60 minutos.
+RF011 - Agenda Visual: Profissional visualiza seus agendamentos em calend�rio semanal interativo, com status de cada consulta.
+3.1.4 Agendamento de Consultas (RF012-RF016)
+RF012 - Visualizar Disponibilidade: Sistema exibe slots dispon�veis calculados a partir dos hor�rios configurados pelo profissional.
+RF013 - Agendar Consulta: Paciente seleciona profissional, data e hor�rio; agendamento � criado com status "pendente" e confirma��o por e-mail.
+RF014 - Cancelamento e Reagendamento: Paciente cancela com 24h de anteced�ncia; profissional pode cancelar a qualquer momento. O reagendamento segue fluxo em 3 etapas: (1) profissional prop�e novo hor�rio, (2) paciente aceita ou rejeita via sistema, (3) sistema atualiza o status. Mensagens textuais podem ser trocadas entre paciente e profissional durante o processo de agendamento (RF014-A - Mensagens do Agendamento).
+RF014-A - Mensagens do Agendamento: Mensagens textuais podem ser trocadas entre paciente e profissional durante o processo de negocia��o/reagendamento de uma consulta. As mensagens s�o persistidas na tabela appointment_messages (appointment_id FK, sender_id FK → users, message text, created_at) e associadas ao agendamento em quest�o. Cada mensagem registra o remetente (patient ou professional) para exibi��o diferenciada na interface.
+RF015 - Notifica��es Autom�ticas: Sistema envia e-mails autom�ticos: confirma��o do agendamento, lembrete 24h antes e lembrete 1h antes. O sistema possui dupla camada de notifica��o: (1) notifica��es no banco de dados (tabela notifications) com tipos pr�-definidos (confirma��o, lembrete, cancelamento, reagendamento, message), status (n�o lida, lida, arquivada) e metadados em JSONB; (2) envio de e-mail via Resend com templates HTML para eventos cr�ticos (confirma��o, lembrete 24h, lembrete 1h, cancelamento).
+RF016 - Status de Agendamento: Sistema mant�m estados: agendado, confirmado, em andamento, conclu�do, cancelado.
+3.1.5 Prontu�rio Eletr�nico - EHR (RF017-RF020)
+RF017 - Cria��o de Prontu�rio: Profissional cria prontu�rio durante ou ap�s consulta, com campos: queixa principal, anamnese, exame do estado mental, evolu��o cl�nica e plano terap�utico.
+RF018 - Diagn�stico ICD-10: Sistema valida e salva diagn�sticos com c�digo ICD-10 oficial; permite m�ltiplos diagn�sticos com indica��o do prim�rio.
+RF019 - Prescri��o de Medicamentos: Profissional registra prescri��es com: medicamento, dosagem, frequ�ncia, dura��o e observa��es.
+RF020 - Gera��o de PDF: Profissional gera PDF formatado do prontu�rio para impress�o, arquivo ou envio ao paciente.
+Nota: Funcionalidades de sugest�o de diagn�sticos por IA e estrutura��o inteligente de notas cl�nicas foram removidas do escopo do MVP e est�o detalhadas na Se��o 9 - Funcionalidades de IA para Vers�o Futura.
+3.1.6 Teleconsulta (RF021-RF023)
+RF021 - Sala WebRTC: Sistema gera sala de videoconsulta com token �nico por agendamento, utilizando WebRTC nativo do browser.
+RF022 - V�deo, �udio, Chat e Compartilhamento de Tela: Comunica��o bidirecional de v�deo e �udio com controles de c�mera/microfone; chat de texto em tempo real via WebSocket/Socket.io; compartilhamento de tela nativo via getDisplayMedia API, com substitui��o din�mica da faixa de v�deo no PeerConnection (replaceTrack) sem necessidade de renegocia��o completa, notifica��o em tempo real para a outra parte via sinaliza��o Socket.io (evento screen_sharing_status), indicador visual na interface para ambos os participantes e retorno autom�tico para c�mera ao encerrar o compartilhamento.
+RF023 - Gerenciamento da Sess�o: Sala dispon�vel 15 minutos antes do hor�rio agendado; encerrada automaticamente ap�s 24h ou quando ambos saem.
+3.1.7 Dashboard Administrativo (RF024-RF025)
+RF024 - M�tricas e Relat�rios: Admin visualiza: total de agendamentos, taxa de comparecimento, cancelamentos, novos pacientes por per�odo.
+RF025 - Gest�o de Usu�rios: Admin pode ativar, desativar e editar usu�rios; criar e gerenciar especialidades dispon�veis no sistema.
+3.1.8 Registro de Humor e Emo��es (RF026-RF027)
+RF026 - Registro de Humor: O paciente deve poder registrar seu humor em escala de 1 a 5 (muito ruim a excelente), com campo opcional de nota textual. O registro � persistido no banco de dados e pode ser visualizado em formato de gr�fico.
+RF027 - Visualiza��o de Hist�rico de Humor: O profissional deve poder visualizar o hist�rico de humor dos seus pacientes nos �ltimos 7 ou 30 dias, em formato de gr�fico (Chart.js). Atualiza��es em tempo real via Socket.io.
+3.1.9 Gest�o de Relat�rios (RF028)
+RF028 - CRUD de Relat�rios: O profissional pode criar, editar, visualizar e excluir relat�rios per�odicos, com t�tulo, per�odo (data in�cio/fim), observa��es e formata��o livre.
+3.2 Requisitos N�o Funcionais
+3.2.1 Seguran�a
+RNF001 - Criptografia: Dados sens�veis criptografados em tr�nsito (TLS 1.3 via HTTPS).
+RNF002 - Autentica��o: JWT com expira��o de 24h, refresh token com rota��o, prote��o contra ataques de for�a bruta (rate limiting).
+RNF003 - LGPD: Consentimento expl�cito do usu�rio, pol�tica de privacidade, direito de exclus�o de dados, logs de acesso a dados sens�veis. Nota: Fluxo de consentimento formal n�o implementado no MVP; pol�tica de privacidade exibida no cadastro.
+RNF004 - Auditoria: Todas a��es cr�ticas (criar/editar prontu�rio, prescri��es) registradas com timestamp, usu�rio e IP.
+3.2.2 Performance
+RNF005 - Tempo de Resposta: APIs REST devem responder em menos de 2 segundos para 95% das requisi��es em carga normal.
+RNF006 - Usu�rios Simult�neos: Sistema deve suportar pelo menos 100 usu�rios simult�neos no MVP (escal�vel horizontalmente).
+RNF007 - Cache: Redis para cache de slots de disponibilidade, sess�es JWT e dados frequentemente acessados.
+3.2.3 Disponibilidade e Confiabilidade
+RNF008 - Uptime: M�nimo 99% de disponibilidade mensal.
+RNF009 - Backup: Backup autom�tico di�rio do banco PostgreSQL com reten��o de 7 dias.
+RNF010 - Tratamento de Erros: Todas as APIs retornam erros estruturados com c�digo HTTP correto e mensagem descritiva.
+3.2.4 Usabilidade e Acessibilidade
+RNF011 - Responsividade: Interface totalmente responsiva para desktop (1280px+), tablet (768px) e mobile (375px+).
+RNF012 - Acessibilidade: Conformidade m�nima WCAG 2.1 n�vel A. Nota: Conformidade parcial; auditado com axe-core nas telas principais (contraste e navega��o por teclado).
+RNF013 - Idioma: Interface em portugu�s brasileiro com terminologia adequada � �rea de sa�de mental.
+3.2.5 Tecnologias e Infraestrutura
+Componente
+Tecnologia
+Vers�o M�nima
+Justificativa
+Frontend
+React + TypeScript
+18.2.0
+Vers�o est�vel e amplamente testada
+Estiliza��o
+CSS Custom Properties + Design System Pr�prio
+-
+CSS puro com vari�veis tem�ticas elimina depend�ncia, simplifica o build
+Gr�ficos e Dashboards
+Chart.js
+4.4.0
+Visualiza��o de m�tricas de humor e agendamentos
+Backend
+Node.js + Express
+18.0
+JavaScript full-stack, alta performance I/O
+API Layer
+Express REST + Zod
+^5.2
+Framework maduro, valida��o com Zod, ecossistema vasto
+Banco de Dados
+PostgreSQL
+16
+Confiabilidade, recursos JSONB, excelente suporte a drizzle-orm
+ORM
+Drizzle ORM
+0.29
+Type-safe, migrations autom�ticas
+Cache/Sess�o
+Redis
+7.0
+Alta performance, pub/sub para WebSocket
+Armazenamento
+Local + S3/R2
+-
+Dual provider; LocalStorage como fallback
+Autentica��o
+JWT + bcrypt
+-
+Stateless, seguro, amplamente suportado
+WebRTC
+Browser nativo + Socket.io
+-
+Sem custo de SDK, WebRTC API nativa
+IA
+Simulated / Claude API (futuro)
+-
+Provider simulated no MVP; LLM real via AI_PROVIDER
+IA Assistant
+Servi�o Simulado
+-
+3 endpoints: draft, improve, diagnosis
+E-mail
+Resend / SendGrid
+-
+Free tier generoso, templates HTML
+Containeriza��o
+Docker + Compose
+24.0
+Reprodutibilidade, deploy simplificado
+CI/CD
+GitHub Actions
+-
+Gratuito para projetos p�blicos
+Deploy
+Railway / Render
+-
+Free tier, deploy autom�tico via git
+Testes
+Vitest
+-
+Testes unit�rios planejados (n�o implementados)
+4 ARQUITETURA E MODELAGEM
+4.1 Arquitetura do Sistema
+O MindCare adota arquitetura em camadas com separa��o clara de responsabilidades. No MVP, todas as camadas residem em um �nico servidor (mon�lito modular), o que simplifica o desenvolvimento e o deploy, mantendo a estrutura preparada para migra��o futura a microsservi�os.
+| Camada | Responsabilidade | Tecnologias MVP |
+|--------|-----------------|-----------------|
+| Apresenta��o | UI responsiva, estado, WebRTC | React 18, CSS Design System, Chart.js, Socket.io-client |
+| Proxy/Seguran�a | TLS, CORS, Helmet | Express middleware (helmet, cors) |
+| API (Backend) | Rotas REST, auth, valida��o | Express 5, Zod 4, JWT |
+| Servi�os de Dom�nio | L�gica de neg�cio | Services TypeScript (inje��o manual) |
+| Persist�ncia | BD relacional, cache, arquivos | PostgreSQL 16, Drizzle ORM 0.45, Redis 7, S3/Local |
+| Servi�os Externos | E-mail, sinaliza��o WebRTC | Resend, Socket.io |
+| IA | Rascunho, diagn�stico, melhoria | Servi�o simulado (preparado para Claude/OpenAI) |
+4.2 Diagrama de Casos de Uso
+O diagrama de casos de uso representa as intera��es entre os tr�s atores principais (Paciente, Profissional e Administrador) e as funcionalidades implementadas no MVP.
+Funcionalidades de IA assistiva est�o detalhadas na Se��o 9.
+4.3 Diagrama de Classes
+O diagrama de classes modela as entidades principais do sistema, seus atributos, m�todos e relacionamentos. As 11 classes do MVP mapeiam diretamente �s tabelas do banco de dados, utilizando Drizzle ORM para type-safety.
+As principais rela��es entre classes s�o: User possui especializa��o em Patient ou
+	HealthProfessional 	(1:1); 	Patient 	realiza 	Appointments 	(1:N); 	Appointment 	gera
+MedicalRecord (1:1); MedicalRecord cont�m Diagnoses, Prescriptions e Documents (1:N); Appointment possui TelemedicineRoom (1:1); TelemedicineRoom cont�m Messages (1:N).
+4.4 Diagramas de Sequ�ncia
+4.4.1 Fluxo de Agendamento de Consulta
+O diagrama descreve a sequ�ncia de intera��es entre o paciente, o frontend React, a API Express, o banco de dados PostgreSQL e o servi�o de e-mail durante o processo de agendamento.
+4.4.2 Fluxo de Cria��o de Prontu�rio Eletr�nico
+O diagrama descreve a sequ�ncia de cria��o do prontu�rio com campos estruturados, valida��o de diagn�sticos ICD-10 e upload de documentos ao S3. A integra��o com IA para sugest�o de diagn�sticos opera em modo simulado e est� documentada na Se��o 9.
+4.5 Implementa��o de Seguran�a
+- Autentica��o: JWT com expira��o de 24h, middleware authGuard em todas as rotas protegidas
+- RBAC: Middleware requireRole(['patient'|'professional'|'admin']) em cada rota
+- Headers de seguran�a: Helmet (8 middleware: CSP, HSTS, X-Frame-Options, etc.)
+- CORS: Configurado por vari�vel de ambiente (CORS_ORIGIN)
+- Valida��o: Zod 4 em todos os inputs de API (schemas por rota)
+- Senhas: bcrypt com salt rounds = 10
+- Taxa de requisi��es: Redis + rate-limit middleware (dispon�vel, comentado por padr�o)
+- Tr�nsito: TLS 1.3 via HTTPS (gerenciado pela plataforma de deploy)
+- Armazenamento: Dual provider (Local + S3/R2 opcional)
+- Logs de auditoria: N�o implementado no MVP (previsto para v2 com tabela ai_logs)
+5 MODELO DE DADOS
+5.1 Diagrama Entidade-Relacionamento
+O banco de dados PostgreSQL do MindCare MVP � composto por 17 tabelas normalizadas at� a 3� Forma Normal (3FN). As chaves prim�rias (PK) s�o auto-incrementadas; as chaves estrangeiras (FK) garantem integridade referencial com ON DELETE CASCADE onde apropriado.
+Nota: O sistema inclui script de seed data (scripts/seed.ts) que popula o banco com dados de demonstra��o: 1 admin, 3 profissionais, 5 pacientes, 20 agendamentos, registros de prontu�rio, diagn�sticos, prescri��es e logs de humor. Executado automaticamente na primeira inicializa��o do servidor.
+5.2 Dicion�rio de Dados
+Tabela
+Colunas Principais
+Registros
+Esperados
+�ndices
+users
+id, name, email, role, password_hash, created
+_at5.000
+idx_email (unique), idx_role
+patients
+id, user_id (FK), cpf, birth_date, allergies, eme
+rgency_contact3.000
+idx_user_id, idx_cpf (unique)
+health_professionals
+id, user_id (FK), specialty_id (FK), crp_crm, co
+nsult_fee100
+idx_user_id, idx_specialty_id
+specialties
+id, name, description
+20
+idx_name
+working_hours
+id, professional_id (FK), day_of_week, start_ti
+me, end_time700
+idx_professional_day
+appointments
+id, patient_id (FK), professional_id (FK), dateti
+me, status, type20.000
+idx_patient, idx_professional, idx_datetime
+medical_records
+id, appointment_id (FK), professional_id (FK), 
+anamnesis, created15.000
+_atidx_appointment, idx_professional
+diagnoses
+id, record_id (FK), icd10_code, description, is_
+primary30.000
+idx_record_id, idx_icd10
+prescriptions
+id, record_id (FK), medication, dosage, freque
+ncy, duration25.000
+idx_record_id
+documents
+id, record_id (FK), owner_id (FK), filename, s3
+_key, mime_type10.000
+idx_record_id, idx_owner
+telemedicine_rooms
+id, appointment_id (FK), room_token, status, s
+tarted_at20.000
+idx_appointment, idx_token (unique)
+messages
+id, room_id (FK), sender_id (FK), content, sent
+_at100.000
+idx_room_id, idx_sent_at
+notifications
+id, user_id (FK), appointment_id (FK), type, m
+essage, sent_at50.000
+idx_user_id, idx_sent_at
+emotion_logs
+id, patient_id (FK), mood_value (1-5), mood_label, note, created_at
+5.000
+idx_patient_id
+reports
+id, professional_id (FK), title, period_start, period_end, observations, created_at
+500
+idx_professional
+professional_patients
+id, professional_id (FK), patient_id (FK), created_at
+3.000
+idx_professional, idx_patient (unique pair)
+appointment_messages
+id (PK), appointment_id (FK), sender_id (FK), message (text), created_at
+10.000
+idx_appointment_id, idx_sender_id
+5.3 Schema Drizzle ORM (Excerto)
+A seguir � apresentado um excerto do schema do banco de dados implementado com Drizzle ORM e PostgreSQL:
+```ts
+// schema/domain.ts (excerto)
+import { pgTable, serial, integer, varchar, text, timestamp, pgEnum } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
+
+export const appointmentStatusEnum = pgEnum('appointment_status', [
+  'requested', 'scheduled', 'confirmed', 'rescheduled', 'completed', 'cancelled', 'no_show',
+])
+
+export const appointments = pgTable('appointments', {
+  id: serial('id').primaryKey(),
+  patientId: integer('patient_id').notNull().references(() => patients.id),
+  professionalId: integer('professional_id').notNull().references(() => healthProfessionals.id),
+  startTime: timestamp('start_time').notNull(),
+  endTime: timestamp('end_time').notNull(),
+  status: appointmentStatusEnum('status').default('requested'),
+  type: varchar('type', { length: 20 }).notNull().default('presential'),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const appointmentsRelations = relations(appointments, ({ one }) => ({
+  patient: one(patients, { fields: [appointments.patientId], references: [patients.id] }),
+  professional: one(healthProfessionals, { fields: [appointments.professionalId], references: [healthProfessionals.id] }),
+}))
+```
+
+```ts
+// Mensagens de negocia��o de agendamento
+export const appointmentMessages = pgTable(
+  'appointment_messages',
+  {
+    id: serial('id').primaryKey(),
+    appointmentId: integer('appointment_id').notNull().references(() => appointments.id),
+    senderId: integer('sender_id').notNull().references(() => users.id),
+    message: text('message').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    appointmentIdx: index('appointment_messages_appointment_idx').on(table.appointmentId),
+    senderIdx: index('appointment_messages_sender_idx').on(table.senderId),
+  }),
+)
+```
+5.4 Relacionamentos e Cardinalidades
+Entidade Origem
+Cardinalidade
+Entidade Destino
+Descri��o
+User
+1:1
+Patient
+Um usu�rio pode ser um paciente
+User
+1:1
+HealthProfessional
+Um usu�rio pode ser um profissional
+HealthProfessional
+N:1
+Specialty
+Profissional possui uma especialidade
+HealthProfessional
+1:N
+WorkingHours
+Profissional define m�ltiplos hor�rios
+Patient
+1:N
+Appointment
+Paciente faz m�ltiplos agendamentos
+HealthProfessional
+1:N
+Appointment
+Profissional recebe m�ltiplos agendamentos
+Appointment
+1:1
+MedicalRecord
+Consulta gera um prontu�rio
+Appointment
+1:1
+TelemedicineRoom
+Consulta tem uma sala de v�deo
+MedicalRecord
+1:N
+Diagnosis
+Prontu�rio tem m�ltiplos diagn�sticos
+MedicalRecord
+1:N
+Prescription
+Prontu�rio tem m�ltiplas prescri��es
+MedicalRecord
+1:N
+Document
+Prontu�rio tem m�ltiplos documentos
+TelemedicineRoom
+1:N
+Message
+Sala tem m�ltiplas mensagens de cha
+User
+1:N
+Notification
+Usu�rio recebe m�ltiplas notifica��es
+Patient
+1:N
+EmotionLog
+Paciente registra m�ltiplos humores
+Professional
+1:N
+Report
+Profissional cria m�ltiplos relat�rios
+Professional
+N:M
+Patient
+Via professional_patients (tabela associativa)
+Appointment
+1:N
+AppointmentMessage
+Consulta tem m�ltiplas mensagens
+
+
+6 PROT�TIPOS DE INTERFACE
+Os prot�tipos de alta fidelidade foram desenvolvidos com est�tica cinematogr�fica, utilizando gradiente teal/laranja como identidade visual da marca MindCare. As telas foram projetadas com foco em usabilidade cl�nica, priorizando hierarquia de informa��o, contraste de cores e acessibilidade.
+6.1 Tela de Login e Autentica��o
+A tela de login utiliza fundo com gradiente escuro teal/azul-marinho, card semitransparente centralizado com borda cyan e tipografia branca. Suporta autentica��o por e-mail/senha e OAuth (Google).
+6.2 Dashboard do Paciente
+O dashboard do paciente apresenta sidebar de navega��o � esquerda, cards de m�tricas no topo (pr�xima consulta, consultas realizadas, prontu�rios), lista de pr�ximas consultas com status colorizado e painel lateral com �ltimos prontu�rios e diagn�sticos.
+6.3 Agenda do Profissional
+A agenda do profissional exibe calend�rio semanal interativo com slots de agendamento coloridos por tipo (presencial em laranja, teleconsulta em teal). O profissional visualiza nome do paciente, tipo de consulta e pode navegar entre semanas.
+6.4 Prontu�rio Eletr�nico
+O prontu�rio eletr�nico exibe barra de informa��es do paciente no topo (alergias em destaque vermelho), painel com campos estruturados (anamnese, evolu��o, diagn�sticos ICD-10, prescri��es) e bot�es de a��o. O painel de sugest�es de IA est� implementado e documentado na Se��o 9. Diagn�sticos s�o exibidos com c�digo ICD-10 e indica��o de prim�rio/secund�rio.
+6.5 Guia de Identidade Visual
+Elemento
+Especifica��o
+Uso
+Cor prim�ria
+#008080 (Teal)
+Bot�es principais, �cones, destaques cl�nicos
+Cor secund�ria
+#D2640A (Laranja)
+Alertas, presencial, a��es secund�rias
+Cor de fundo
+#F5F7FA (Cinza claro)
+Fundo de dashboards e pain�is
+Cor de superf�cie
+#FFFFFF (Branco)
+Cards, modais, formul�rios
+Cor de texto
+#142850 (Azul escuro)
+T�tulos e textos principais
+Tipografia
+Inter (Google Fonts)
+Todo o sistema
+Bordas arredondadas
+8px (cards), 4px (campos)
+Consist�ncia visual
+Sombras
+0 2px 8px rgba(0,0,0,0.08)
+Eleva��o de cards
+7 CRONOGRAMA DE DESENVOLVIMENTO - MVP 8 SEMANAS
+O cronograma foi elaborado considerando 1 a 2 desenvolvedores trabalhando em regime de tempo parcial a integral, com entrega e apresenta��o do TCC em junho de 2025. Cada sprint tem dura��o de 1 semana, com entreg�vel funcional ao final.
+7.1 Detalhamento dos Sprints
+Sprint
+Semana
+Foco
+Entreg�veis Concretos
+Tecnologias
+S1
+1� (5-9 Mai)
+An�lise e Setup
+Documenta��o ABNT finalizada, ambiente Docker configu
+rad
+S2
+2� (12-16 Mai)
+Backend Core
+APIs: registro, login JWT, CRUD usu�rios, RBAC middlew
+are, Express, Express REST, bcrypt, JWTerfi
+S3
+3� (19-23 Mai)
+Agendamento
+APIs: hor�rios, slots dispon�veis, criar/cancelar/reagendar agendamento, envio de e-mail
+Drizzle, Resend, node-cron
+S4
+4� (26-30 Mai)
+Prontu�rio
+APIs: CRUD prontu�rio, diagn�sticos ICD-10, prescri��es,
+ geDrizzle, Puppeteer/jsPDF
+S5
+5� (2-6 Jun)
+Teleconsulta
+Sinaliza��o WebRTC via Socket.io, sala por token, chat em tempo real, controles c�mera/mic
+Socket.io, WebRTC API
+S6
+6� (9-13 Jun)
+Frontend
+Todas as telas React: login, dashboards, calend�rio, prontu�rio, teleconsulta, admin
+React 18, Tailwind 4, Express REST
+S7
+7� (16-20 Jun)
+Testes + Ajustes
+Testes unit�rios (Vitest), testes E2E (Playwright), corre��o
+ de bugs, UX polishVitest, Playwright, ESLint
+S8
+8� (23-27 Jun)
+Deploy + Docs
+Deploy Railway/Render, CI/CD GitHub Actions, document
+a��
+Node.js, PostgreSQL, Docker, Drizzle, schema Drizzle criado, migrations e
+ paciente e profissional
+a��o de PDF (IA assistiva - ver Se��o 9
+Docker, GitHub Actions, Railway final, slides de apresenta��o
+7.2 Marcos de Entrega
+Marco
+Data
+Crit�rio de Aceite
+M1 - Setup Completo
+09/05/2025
+Ambiente rodando localmente via Docker, banco criado, APIs de auth funcionando
+M2 - Backend MVP
+30/05/2025
+Todas as rotas REST funcionando, validadas com Postman/Thunder Client
+M3 - Teleconsulta
+06/06/2025
+Videochamada WebRTC funcional entre dois browsers, chat em tempo real operacional
+M4 - Frontend Completo
+13/06/2025
+Todas as telas implementadas e integradas com o backend
+M5 - Testes
+20/06/2025
+Cobertura m�nima de 60% em testes unit�rios, fluxo E2E agendamento+prontu�rio OK
+M6 - Deploy + Entrega
+27/06/2025
+Sistema acess�vel via URL p�blica, documenta��o entregue, slides prontos
+7.3 Riscos e Mitiga��es
+Risco
+Probabilidade
+Impacto
+Mitiga��o
+WebRTC n�o funcionar em todos os b
+rowsersM�dia
+Alto
+Testar Chrome/Firefox/Edge; fallback para chat somente texto
+Prazo insuficiente para frontend
+Alta
+Alto
+
+Deploy falhar pr�ximo � apresenta��o
+Baixa
+Alto
+Deploy antecipado na semana 7; ambiente local como backup
+Railway/Render free tier inativo
+Baixa
+Alto
+Conta paga $5/m�s como conting�ncia; Heroku como alternativa
+Priorizar fluxos principais (login, agendamento, prontu�rio); admin simplifica
+8 ESTRAT�GIA DE TESTES
+8.1 Tipos de Testes
+Tipo
+Ferramenta
+Cobertura Alvo
+Escopo
+Unit�rios
+Vitest + Testing Library
+60%
+Servi�os de neg�cio, utilit�rios, componentes React
+Integra��o
+Vitest + Supertest
+40%
+Rotas de API com banco de dados em mem�ria
+E2E
+Playwright
+Fluxos principais
+Login, agendamento completo, cria��o de prontu�rio
+Acessibilidade
+Axe-core
+Telas principais
+Contraste, ARIA, navega��o por teclado
+Performance
+Lighthouse
+Score > 80
+Carregamento, SEO, boas pr�ticas
+8.2 Casos de Teste Principais
+ID
+Caso de Teste
+Pr�-condi��o
+Resultado Esperado
+CT001
+Login com credenciais v�lidas
+Usu�rio cadastrado
+JWT retornado, redirecionamento ao dashboard
+CT002
+Login com senha incorreta
+Usu�rio cadastrado
+Erro 401, mensagem de credenciais inv�lidas
+CT003
+Agendar consulta em slot dispon�vel
+Paciente logado, slot livre
+Agendamento criado, e-mail enviado
+CT004
+Tentar agendar em slot ocupado
+Paciente logado, slot ocupado
+Erro 409, mensagem de indisponibilidade
+CT005
+Criar prontu�rio com diagn�stico ICD-
+10Profissional logado, consulta 
+ativaProntu�rio salvo, diagn�stico validado
+CT006
+Diagn�stico ICD-10 inv�lido
+Profissional logado
+Erro 422, lista de c�digos sugeridos
+CT007
+Iniciar teleconsulta
+Ambos os usu�rios logados, c
+onsulta confirmadaSala WebRTC criada, v�deo/�udio estabelecido
+CT008
+Gerar PDF do prontu�rio
+Prontu�rio completo
+PDF gerado com layout correto e dados do paciente
+CT009
+Cancelar consulta fora do prazo
+Consulta a 10h, paciente tent
+a cancelarErro 403, mensagem sobre pol�tica de cancelamento
+9 FUNCIONALIDADES DE INTELIG�NCIA ARTIFICIAL - IMPLEMENTA��O MVP
+
+A IA foi implementada no MVP em modo simulado (sem depend�ncia de API externa), permitindo demonstra��o completa do fluxo. A arquitetura est� preparada para substituir o simulado por LLMs reais (Claude API, OpenAI) via providers.
+9.2 RF-IA001 - Sugest�o de Diagn�sticos por Sintomas
+Endpoint POST /api/medical-records/ai-diagnosis j� implementado. Retorna 5 sugest�es de CID-10 com confidence score (0-100%).
+Atributo
+Descri�o
+Provider
+simulated (padr�o) / Claude API ou OpenAI (troca via vari�vel AI_PROVIDER)
+Entrada
+Texto livre de sintomas + campos de anamnese do prontu�rio
+Sa�da
+Lista de at� 5 diagn�sticos ICD-10 com c�digo, descri�o e % de confian�a
+Exibi�o
+Painel lateral no prontu�rio eletr�nico (lado direito)
+Responsabilidade
+Sugest�es s�o apenas auxiliares; diagn�stico final � sempre do profissional
+Regra de neg�cio
+RN-IA001: Nenhuma sugest�o de IA � salva automaticamente sem valida�o humana
+Endpoint
+POST /api/medical-records/ai-diagnosis
+Cache
+N�o implementado no MVP (previsto via Redis com hash SHA-256)
+9.3 RF-IA002 - Estrutura��o Inteligente de Notas Cl�nicas
+
+O endpoint POST /ai/structure-notes encontra-se implementado no MVP em modo simulado, retornando uma estrutura sugerida para os campos do prontu�rio (queixa principal, anamnese, evolu��o cl�nica, plano terap�utico) com base no tipo de consulta e especialidade do profissional.
+
+Atributo
+Descri��o
+Trigger
+Acionado quando o profissional abre um novo prontu�rio em branco
+Entrada
+Tipo de consulta (psicologia/psiquiatria), especialidade do profissional, hist�rico resumido
+Sa�da
+Estrutura sugerida para os campos: queixa principal, anamnese, evolu��o, plano terap�utico
+Intera��o
+O profissional pode aceitar a estrutura ou descart�-la com um clique
+Provider
+simulated (padr�o) / Claude API ou OpenAI (via AI_PROVIDER)
+Endpoint
+POST /ai/structure-notes
+Cache
+N�o implementado no MVP (previsto via Redis com hash SHA-256)
+9.4 Regras de Neg�cio para Funcionalidades de IA
+
+C�digo
+Regra
+Descri��o
+RN-IA001
+N�o-autonomia
+Sugest�es de IA s�o sempre auxiliares; o diagn�stico final � responsabilidade exclusiva do profissional
+RN-IA002
+Rastreabilidade
+Toda sugest�o gerada por IA � registrada em log com timestamp, modelo utilizado e vers�o da API
+RN-IA003
+Consentimento
+Paciente deve consentir explicitamente com o uso de IA no processamento de seus dados cl�nicos (LGPD)
+RN-IA004
+Desabilita��o
+A feature de IA pode ser desabilitada por cl�nica ou por profissional nas configura��es do sistema
+RN-IA005
+Limites de uso
+Sistema monitora consumo da API e desabilita automaticamente a feature ao atingir 80% da cota mensal
+9.5 Arquitetura T�cnica da Integra��o com IA
+
+A arquitetura de IA do MVP utiliza o padr�o de providers (Strategy Pattern), permitindo alternar entre o provedor simulado e LLMs reais via configura��o. O provedor simulated � o padr�o e retorna respostas pr�-definidas sem depend�ncia externa.
+
+Componente
+Tecnologia
+Detalhe
+Provider padr�o
+SimulatedProvider (classe TypeScript)
+Retorna respostas mockadas sem chamada de rede; integrado via inje��o de depend�ncia
+Provider real (futuro)
+Claude API / OpenAI
+Ativado via vari�vel de ambiente AI_PROVIDER (preparado, n�o implementado)
+Endpoint diagn�stico
+POST /api/medical-records/ai-diagnosis
+Implementado no MVP, retorna sugest�es ICD-10 simuladas
+Endpoint estrutura
+POST /ai/structure-notes
+Implementado no MVP, retorna template de prontu�rio simulado
+Logs de auditoria
+PostgreSQL - tabela ai_logs
+Registra: user_id, record_id, feature, model, prompt_hash, response_hash, created_at
+Cache (futuro)
+Redis (TTL 1h, hash SHA-256)
+N�o implementado no MVP
+Rate limiting (futuro)
+100 req/dia por cl�nica
+N�o implementado no MVP
+9.6 Casos de Teste para Funcionalidades de IA
+
+ID
+Caso de Teste
+Pr�-condi��o
+Resultado Esperado
+CT-IA001
+Sugest��o de diagn�stico com sintomas v�lidos
+Sintomas preenchidos no prontu�rio
+Lista de at� 5 sugest�es ICD-10 com percentuais de confian�a
+CT-IA002
+Sugest��o de diagn�stico com sintomas insuficientes
+Campo de sintomas com menos de 20 caracteres
+Mensagem solicitando mais detalhes; nenhuma sugest�o exibida
+CT-IA003
+Estrutura de notas cl�nicas gerada
+Novo prontu�rio em branco
+Template estruturado exibido com campos sugeridos
+CT-IA004
+Profissional aceita sugest�o da IA
+Sugest�o exibida no painel
+Diagn�stico adicionado ao prontu�rio com marcador sugerido por IA
+CT-IA005
+Feature IA desabilitada
+Admin desabilitou IA para a cl�nica
+Painel lateral de IA n�o � exibido; prontu�rio funciona normalmente
+9.7 Impacto no Modelo de Dados
+
+O MVP inclui a seguinte tabela no banco de dados para auditoria das intera��es de IA:
+
+Tabela
+Colunas
+Prop�sito
+ai_logs
+id (PK), user_id (FK), record_id (FK), feature (enum), model (varchar), prompt_hash (varchar), response_hash (varchar), created_at
+Auditoria completa de todas as intera��es com a API de IA (simulada ou real)
+9.8 Estimativa de Esfor�o para Integra��o com LLM Real
+
+As funcionalidades de IA j� foram implementadas no MVP em modo simulado. A tabela abaixo apresenta a estimativa para substitui��o do provedor simulado por LLMs reais:
+
+Tarefa
+Estimativa
+Sprint Sugerido
+Implementar provider real Claude API (servi�o, cache, rate limit)
+3 dias
+S1 da v2.0
+Implementar provider real OpenAI
+2 dias
+S1 da v2.0
+Cache Redis com hash SHA-256
+1 dia
+S1 da v2.0
+Rate limiting (100 req/dia)
+0.5 dia
+S1 da v2.0
+Testes de integra��o com LLM real
+2 dias
+S2 da v2.0
+10 CONSIDERA��ES FINAIS
+O sistema MindCare MVP representa uma solu��o t�cnica e clinicamente relevante para o gerenciamento de cl�nicas de sa�de mental. O escopo foi criteriosamente reduzido para garantir entrega de qualidade em 8 semanas, mantendo todas as funcionalidades essenciais que demonstram dom�nio das tecnologias modernas de desenvolvimento web.
+A vers�o MVP demonstra compet�ncias t�cnicas em: desenvolvimento full-stack com React e Node.js, modelagem de banco de dados relacional, integra��o de APIs externas (e-mail), comunica��o em tempo real (WebRTC e WebSocket), seguran�a (JWT, RBAC, criptografia), boas pr�ticas de engenharia de software (SOLID, Clean Architecture, testes automatizados) e deploy em nuvem com CI/CD.
+A Intelig�ncia Artificial foi implementada no MVP em modo simulado (documentada na Se��o 9), com arquitetura preparada para substitui��o por LLMs reais (Claude API ou OpenAI).
+Como trabalho futuro ap�s a apresenta��o do TCC, o sistema pode evoluir para incluir: funcionalidades de IA conforme Se��o 9, aplicativo mobile nativo com React Native, integra��o com planos de sa�de e prontu�rio unificado (RNDS), m�dulo de gest�o financeira, dashboards avan�ados com Machine Learning para predi��o de riscos e expans�o para m�ltiplas cl�nicas em modelo SaaS.
+Fator Cr�tico
+A��o
+C�digo limpo e documentado
+JSDoc em todas as fun��es, README detalhado, Swagger para as APIs
+Demo funcional na apresenta��o
+Sistema hospedado com dados de exemplo pr�-carregados
+Seguran�a e LGPD
+Destacar criptografia, controle de acesso e pol�tica de privacidade implementados
+Escalabilidade futura
+Arquitetura modular preparada para microsservi�os e upgrade de IA para LLM real (Se��o 9)
+11 REFER�NCIAS
+[1] BRASIL. Lei n� 13.709, de 14 de agosto de 2018. Lei Geral de Prote��o de Dados Pessoais (LGPD).
+Bras�lia: Presid�ncia da Rep�blica, 2018.
+[2] ORGANIZA��O MUNDIAL DA SA�DE. Classifica��o Estat�stica Internacional de Doen�as eProblemas Relacionados � Sa�de - CID-10. Genebra: OMS, 2019.
+[3] ANTHROPIC. Claude API Documentation. San Francisco: Anthropic, 2024. Dispon�vel em: https://docs.anthropic.com.
+[4] WORLD WIDE WEB CONSORTIUM. Web Content Accessibility Guidelines (WCAG) 2.1. W3CRecommendation, 2018.
+[5] OPEN WEB APPLICATION SECURITY PROJECT. OWASP Top 10: 2021. OWASP Foundation,2021.
+[6] REACT. React 18 Documentation. Meta Open Source, 2024. Dispon�vel em: https://react.dev.
+[7] DRIZZLE TEAM. Drizzle ORM Documentation. Drizzle Team, 2024. Dispon�vel em: https://orm.drizzle.team.
+[8] CONSELHO FEDERAL DE MEDICINA. Demografia M�dica no Brasil 2023. CFM: Bras�lia, 2023.
+
+Documento preparado por: [Nome do Aluno] | Vers�o: 2.0 MVP | Maio de 2025 | Aprovado para
+Desenvolvimento
+	MindCare - Documenta��o de Requisitos MVP v2.0	1
+
+	MindCare - Documenta��o de Requisitos MVP v2.0	1
+
+	MindCare - Documenta��o de Requisitos MVP v2.0	1
+
