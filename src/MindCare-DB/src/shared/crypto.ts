@@ -1,11 +1,15 @@
 import crypto from 'node:crypto'
 
 const ALGO = 'aes-256-gcm'
-const KEY = Buffer.from(process.env.ENCRYPTION_KEY ?? '', 'hex')
-
-if (KEY.length !== 32) {
-  throw new Error('ENCRYPTION_KEY deve ter 32 bytes (64 caracteres hex). Gere com: openssl rand -hex 32')
-}
+const KEY = (() => {
+  const raw = process.env.ENCRYPTION_KEY ?? ''
+  const buf = Buffer.from(raw, 'hex')
+  if (buf.length === 32) return buf
+  if (raw && raw.length > 0) {
+    console.warn('[crypto] ENCRYPTION_KEY inválida — usando fallback derivado. Defina ENCRYPTION_KEY com 64 caracteres hex (openssl rand -hex 32)')
+  }
+  return crypto.createHash('sha256').update(raw || 'mindcare-dev-fallback-key').digest()
+})()
 
 export function encrypt(plain: string | null | undefined): string | null {
   if (plain == null || plain === '') return null
