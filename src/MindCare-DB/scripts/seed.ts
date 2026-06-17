@@ -17,11 +17,8 @@ import {
   prescriptions,
   documents,
   notifications,
-  consentTerms,
-  userConsents,
   aiLogs,
   auditLogs,
-  dataDeletionRequests,
   reports,
 } from '../src/db/schema/index.js'
 import { eq, and } from 'drizzle-orm'
@@ -65,11 +62,8 @@ async function main() {
   await db.delete(healthProfessionals)
   await db.delete(patients)
   await db.delete(specialties)
-  await db.delete(userConsents)
-  await db.delete(consentTerms)
   await db.delete(aiLogs)
   await db.delete(auditLogs)
-  await db.delete(dataDeletionRequests)
   await db.delete(reports)
   await db.delete(users)
 

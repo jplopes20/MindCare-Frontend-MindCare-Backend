@@ -1,7 +1,7 @@
 import { inArray, eq } from 'drizzle-orm'
 import bcrypt from 'bcrypt'
 import { db } from './index.js'
-import { users, specialties, healthProfessionals, patients, workingHours, appointments, professionalPatients, emotionLogs, medicalRecords, diagnoses, prescriptions, documents, notifications, consentTerms } from './schema/index.js'
+import { users, specialties, healthProfessionals, patients, workingHours, appointments, professionalPatients, emotionLogs, medicalRecords, diagnoses, prescriptions, documents, notifications } from './schema/index.js'
 
 const SALT_ROUNDS = 10
 
@@ -268,16 +268,6 @@ export async function seedIfEmpty() {
       console.log('[seed] Notificações inseridas')
     } else {
       console.log('[seed] Dados complementares já existem — preservados')
-    }
-
-    // ── 7. Ensure consent terms ──
-    const existingConsentTerms = await db.select({ id: consentTerms.id }).from(consentTerms).limit(1)
-    if (existingConsentTerms.length === 0) {
-      await db.insert(consentTerms).values([
-        { title: 'Política de Privacidade', description: 'Autorizo o tratamento dos meus dados pessoais conforme a Política de Privacidade da MindCare.', type: 'privacy_policy', version: '1.0.0' },
-        { title: 'Termos de Uso', description: 'Declaro que li e concordo com os Termos de Uso da plataforma MindCare.', type: 'terms_of_use', version: '1.0.0' },
-      ])
-      console.log('[seed] Termos de consentimento inseridos')
     }
 
     console.log('[seed] Banco populado com sucesso!')
