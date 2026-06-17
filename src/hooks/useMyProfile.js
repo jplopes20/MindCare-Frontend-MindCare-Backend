@@ -20,11 +20,13 @@ export function useMyPatientProfile(skip = false) {
           const created = await patientService.createPatientProfile({})
           setProfile(created)
           setError(null)
-        } catch {
-          setError(err?.message || 'Perfil de paciente não encontrado')
+        } catch (createErr) {
+          console.error('[useMyPatientProfile] createPatientProfile({}) fallback failed:', createErr)
+          setError(createErr?.message || err?.message || 'Perfil de paciente não encontrado')
           setProfile(null)
         }
       } else {
+        console.error('[useMyPatientProfile] getMyPatientProfile failed:', err)
         setError(err?.message || 'Erro ao carregar perfil')
         setProfile(null)
       }

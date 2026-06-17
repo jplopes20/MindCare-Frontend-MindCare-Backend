@@ -23,14 +23,19 @@ export function encrypt(plain: string | null | undefined): string | null {
 export function decrypt(payload: string | null | undefined): string | null {
   if (!payload) return null
   if (!payload.startsWith('v1:')) return payload
-  const [, ivHex, tagHex, dataHex] = payload.split(':')
-  const iv = Buffer.from(ivHex, 'hex')
-  const tag = Buffer.from(tagHex, 'hex')
-  const data = Buffer.from(dataHex, 'hex')
-  const decipher = crypto.createDecipheriv(ALGO, KEY, iv)
-  decipher.setAuthTag(tag)
-  const dec = Buffer.concat([decipher.update(data), decipher.final()])
-  return dec.toString('utf8')
+  try {
+    const [, ivHex, tagHex, dataHex] = payload.split(':')
+    const iv = Buffer.from(ivHex, 'hex')
+    const tag = Buffer.from(tagHex, 'hex')
+    const data = Buffer.from(dataHex, 'hex')
+    const decipher = crypto.createDecipheriv(ALGO, KEY, iv)
+    decipher.setAuthTag(tag)
+    const dec = Buffer.concat([decipher.update(data), decipher.final()])
+    return dec.toString('utf8')
+  } catch (err) {
+    console.warn('[crypto] Falha ao descriptografar campo — key mismatch ou dado corrompido. Retornando null.')
+    return null
+  }
 }
 
 export function encryptFields<T extends Record<string, unknown>>(obj: T, fields: (keyof T)[]): T {

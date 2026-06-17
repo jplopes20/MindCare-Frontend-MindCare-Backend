@@ -61,20 +61,35 @@ export async function seedIfEmpty() {
 
     const existingSpecs = await db.select({ id: specialties.id }).from(specialties).limit(1)
     if (existingSpecs.length > 0) {
-      console.log('[seed] Especialidades já existem — dados complementares preservados')
-      return
+      const existingPatients = await db
+        .select({ id: patients.id })
+        .from(patients)
+        .where(inArray(patients.userId, insertedUsers.map((u) => u.id)))
+        .limit(1)
+      if (existingPatients.length > 0) {
+        console.log('[seed] Especialidades já existem — dados complementares preservados')
+        return
+      }
+      console.log('[seed] Especialidades existem, mas pacientes não — recriando dados complementares...')
+    } else {
+      console.log('[seed] Populando dados complementares...')
     }
 
-    console.log('[seed] Populando dados complementares...')
-
-    const specData = [
-      { name: 'Psicologia Clínica', description: 'Atendimento psicoterápico individual' },
-      { name: 'Psiquiatria', description: 'Avaliação e tratamento medicamentoso' },
-      { name: 'Psicanálise', description: 'Abordagem psicanalítica' },
-      { name: 'Terapia Cognitivo-Comportamental', description: 'Abordagem TCC' },
-    ]
-    const insertedSpecs = await db.insert(specialties).values(specData).returning()
-    const findSpec = (name: string) => insertedSpecs.find((s) => s.name === name)!
+    const specNames = ['Psicologia Clínica', 'Psiquiatria', 'Psicanálise', 'Terapia Cognitivo-Comportamental'] as const
+    const existingSpecsByName = await db.select().from(specialties).where(inArray(specialties.name, [...specNames]))
+    let findSpec: (name: string) => { id: number; name: string }
+    if (existingSpecsByName.length > 0) {
+      findSpec = (name: string) => existingSpecsByName.find((s) => s.name === name)!
+    } else {
+      const specData = [
+        { name: 'Psicologia Clínica', description: 'Atendimento psicoterápico individual' },
+        { name: 'Psiquiatria', description: 'Avaliação e tratamento medicamentoso' },
+        { name: 'Psicanálise', description: 'Abordagem psicanalítica' },
+        { name: 'Terapia Cognitivo-Comportamental', description: 'Abordagem TCC' },
+      ]
+      const insertedSpecs = await db.insert(specialties).values(specData).returning()
+      findSpec = (name: string) => insertedSpecs.find((s) => s.name === name)!
+    }
 
     const profData = [
       { userId: findUser('dr.ricardo.silva@mindcare.com').id, crm: 'CRM-SP 123456', specialtyId: findSpec('Psicologia Clínica').id, bio: 'Psicólogo clínico formado pela USP, especialista em terapia cognitivo-comportamental com 12 anos de experiência no atendimento de ansiedade e depressão.' },
