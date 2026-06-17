@@ -16,10 +16,10 @@ export async function login(email, password) {
   return user
 }
 
-export async function register(email, password, role = 'patient', consents = []) {
+export async function register(email, password, role = 'patient') {
   await request('/auth/register', {
     method: 'POST',
-    body: { email, password, role, consents },
+    body: { email, password, role },
     useAuth: false,
   })
 

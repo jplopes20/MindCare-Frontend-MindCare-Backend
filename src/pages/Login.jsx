@@ -15,8 +15,6 @@ export default function Login() {
   const [crm, setCrm] = useState('')
   const [specialtyId, setSpecialtyId] = useState('')
   const [specialties, setSpecialties] = useState([])
-  const [consentTerms, setConsentTerms] = useState([])
-  const [acceptedConsents, setAcceptedConsents] = useState({})
 
   useEffect(() => {
     if (isRegister && role === 'professional') {
@@ -35,20 +33,6 @@ export default function Login() {
         })
     }
   }, [isRegister, role])
-
-  useEffect(() => {
-    if (isRegister) {
-      fetch('/api/consents/active')
-        .then(r => r.json())
-        .then(terms => {
-          setConsentTerms(terms)
-          const initial = {}
-          terms.forEach(t => { initial[t.id] = false })
-          setAcceptedConsents(initial)
-        })
-        .catch(() => {})
-    }
-  }, [isRegister])
 
   function roleRedirect(userRole) {
     if (userRole === 'professional') return '/professional'
@@ -77,22 +61,12 @@ export default function Login() {
           return
         }
       }
-      const allAccepted = Object.values(acceptedConsents).every(Boolean)
-      if (!allAccepted) {
-        setLocalError('Você precisa aceitar todos os termos de consentimento')
-        return
-      }
     }
 
     try {
       let user
       if (isRegister) {
-        const consents = Object.entries(acceptedConsents).map(([id, accepted]) => ({
-          consentTermId: Number(id),
-          accepted,
-        }))
-        user = await register(email, password, role, consents)
-        // Create professional profile after registration
+        user = await register(email, password, role)
         if (user?.role === 'professional') {
           try {
             await createProfessionalProfile({
@@ -203,23 +177,6 @@ export default function Login() {
                   )}
                 </div>
               </>
-            )}
-
-            {consentTerms.length > 0 && (
-              <div style={{ marginTop: 12 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Termos de Consentimento</p>
-                {consentTerms.map(term => (
-                  <label key={term.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 6, fontSize: 12 }}>
-                    <input
-                      type="checkbox"
-                      checked={!!acceptedConsents[term.id]}
-                      onChange={(e) => setAcceptedConsents(prev => ({ ...prev, [term.id]: e.target.checked }))}
-                      style={{ marginTop: 2 }}
-                    />
-                    <span>{term.description || term.title}</span>
-                  </label>
-                ))}
-              </div>
             )}
           </>
         )}

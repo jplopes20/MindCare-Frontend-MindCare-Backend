@@ -8,7 +8,6 @@ import {
 } from '../../db/schema/index.js'
 import { AppError } from '../../shared/errors.js'
 import { parseBody } from '../../shared/validate.js'
-import { decryptFields } from '../../shared/crypto.js'
 import {
   createPatientSchema,
   updatePatientSchema,
@@ -34,14 +33,14 @@ export async function getMyPatientProfileController(
   req: Request,
   res: Response,
 ) {
-  const row = await db.query.patients.findFirst({
+  const patient = await db.query.patients.findFirst({
     where: eq(patients.userId, req.user!.id),
     with: { user: true },
   })
-  if (!row) {
+  if (!patient) {
     throw new AppError(404, 'Perfil de paciente não encontrado')
   }
-  res.json(decryptFields(row, ['cpf', 'phone', 'address']))
+  res.json(patient)
 }
 
 export async function getPatientByIdController(req: Request, res: Response) {
@@ -73,18 +72,13 @@ export async function deletePatientController(req: Request, res: Response) {
 }
 
 export async function getAllPatientsController(req: Request, res: Response) {
-  const searchTerm = req.query.search as string | undefined
-  if (searchTerm) {
-    const results = await services.getAllPatients(searchTerm)
-    res.json(results)
-    return
-  }
-  const rows = await db.query.patients.findMany({
+  // Apenas admin
+  const patientList = await db.query.patients.findMany({
     with: {
       user: true,
     },
   })
-  res.json(rows.map((r) => decryptFields(r, ['cpf', 'phone', 'address'])))
+  res.json(patientList)
 }
 
 // ============================================================================

@@ -9,7 +9,6 @@ import {
   specialties,
 } from '../db/schema/index.js'
 import { emailService } from '../modules/email/email.service.js'
-import { runRetentionJob } from '../modules/domain/lgpd-retention.job.js'
 
 async function sendRemindersForWindow(hoursAhead: number) {
   const now = new Date()
@@ -95,13 +94,7 @@ export function startScheduler() {
     await sendRemindersForWindow(1)
   })
 
-  // RN012 — Retenção LGPD: todo dia às 03:00
-  cron.schedule('0 3 * * *', async () => {
-    console.log('[Scheduler] Executando job de retenção LGPD...')
-    await runRetentionJob().catch(console.error)
-  })
-
   console.log(
-    '[Scheduler] Iniciado — lembretes em 24h e 1h antes das consultas + retenção LGPD (03:00)',
+    '[Scheduler] Iniciado — lembretes em 24h e 1h antes das consultas',
   )
 }

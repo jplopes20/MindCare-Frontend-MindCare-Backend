@@ -2,7 +2,6 @@ import { Router } from 'express'
 import { authGuard } from '../auth/auth.middleware.js'
 import { requireRole } from '../auth/rbac.middleware.js'
 import { asyncHandler } from '../../shared/async-handler.js'
-import { auditAccess } from '../../shared/audit-access.middleware.js'
 import * as controllers from './medical-records.controllers.js'
 
 const router = Router()
@@ -31,7 +30,6 @@ router.get(
   '/medical-records/me',
   authGuard,
   requireRole(['patient']),
-  auditAccess('medical_records'),
   asyncHandler(controllers.getMyMedicalRecordsController),
 )
 
@@ -43,7 +41,6 @@ router.get(
 router.get(
   '/medical-records/:id',
   authGuard,
-  auditAccess('medical_records'),
   asyncHandler(controllers.getMedicalRecordController),
 )
 
@@ -55,7 +52,6 @@ router.get(
   '/patients/:patientId/medical-records',
   authGuard,
   requireRole(['professional']),
-  auditAccess('medical_records', 'patientId'),
   asyncHandler(controllers.getPatientMedicalRecordsController),
 )
 
@@ -89,7 +85,6 @@ router.post(
 router.get(
   '/medical-records/:recordId/pdf',
   authGuard,
-  auditAccess('medical_records', 'recordId'),
   asyncHandler(controllers.generateMedicalRecordPdfController),
 )
 
