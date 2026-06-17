@@ -80,7 +80,6 @@ export const patients = pgTable(
     userId: integer('user_id').notNull().unique().references(() => users.id),
     name: varchar('name', { length: 255 }),
     cpf: varchar('cpf', { length: 255 }),
-    cpfHash: varchar('cpf_hash', { length: 64 }),
     dateOfBirth: timestamp('date_of_birth'),
     phone: varchar('phone', { length: 255 }),
     address: text('address'),
@@ -93,7 +92,6 @@ export const patients = pgTable(
   },
   (table) => ({
     userIdIdx: index('patients_user_id_idx').on(table.userId),
-    cpfHashIdx: uniqueIndex('patients_cpf_hash_key').on(table.cpfHash).where(sql`${table.cpfHash} IS NOT NULL`),
   }),
 )
 
